@@ -1,0 +1,257 @@
+# Azure Kubernetes Service (AKS) Deployment with DAPR
+# Enterprise Kubernetes with DAPR sidecar injection
+#
+# Features:
+#   - DAPR sidecar injection via annotations
+#   - Workload Identity for Azure authentication
+#   - Resource limits for sidecar
+#   - mTLS between services
+
+# Prerequisites:
+# 1. AKS cluster with DAPR installed
+# 2. Workload Identity enabled
+# 3. Azure Container Registry attached
+
+# ====================
+# Cluster Setup
+# ====================
+
+# Create AKS cluster with Workload Identity:
+# az aks create \
+#   --name {cluster-name} \
+#   --resource-group {rg} \
+#   --enable-oidc-issuer \
+#   --enable-workload-identity \
+#   --attach-acr {acr-name} \
+#   --node-count 3
+
+# Install DAPR on AKS:
+# dapr init -k --wait
+
+# Verify DAPR installation:
+# dapr status -k
+# kubectl get pods -n dapr-system
+
+# ====================
+# Workload Identity Setup
+# ====================
+
+# Create managed identity:
+# az identity create --name order-service-identity --resource-group {rg}
+#
+# Get identity details:
+# CLIENT_ID=$(az identity show --name order-service-identity --resource-group {rg} --query clientId -o tsv)
+# OIDC_ISSUER=$(az aks show --name {cluster-name} --resource-group {rg} --query oidcIssuerProfile.issuerUrl -o tsv)
+#
+# Create federated credential:
+# az identity federated-credential create \
+#   --name order-service-federated \
+#   --identity-name order-service-identity \
+#   --resource-group {rg} \
+#   --issuer $OIDC_ISSUER \
+#   --subject system:serviceaccount:default:order-service-sa \
+#   --audiences api://AzureADTokenExchange
+
+# ====================
+# Kubernetes Manifests
+# ====================
+
+---
+# Service Account with Workload Identity
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: order-service-sa
+  namespace: default
+  annotations:
+    azure.workload.identity/client-id: "{managed-identity-client-id}"
+  labels:
+    azure.workload.identity/use: "true"
+
+---
+# DAPR Component - State Store
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: statestore
+  namespace: default
+spec:
+  type: state.azure.cosmosdb
+  version: v1
+  metadata:
+  - name: url
+    value: "https://{account}.documents.azure.com:443/"
+  - name: database
+    value: "daprdb"
+  - name: collection
+    value: "state"
+  - name: azureClientId
+    value: "{managed-identity-client-id}"
+  - name: actorStateStore
+    value: "true"
+
+---
+# DAPR Component - Pub/Sub
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pubsub
+  namespace: default
+spec:
+  type: pubsub.azure.servicebus.topics
+  version: v1
+  metadata:
+  - name: namespaceName
+    value: "{namespace}.servicebus.windows.net"
+  - name: azureClientId
+    value: "{managed-identity-client-id}"
+
+---
+# DAPR Component - Secret Store
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: secretstore
+  namespace: default
+spec:
+  type: secretstores.azure.keyvault
+  version: v1
+  metadata:
+  - name: vaultName
+    value: "{vault-name}"
+  - name: azureClientId
+    value: "{managed-identity-client-id}"
+
+---
+# Deployment with DAPR annotations
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: default
+  labels:
+    app: order-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+        azure.workload.identity/use: "true"
+      annotations:
+        # DAPR sidecar injection
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "order-service"
+        dapr.io/app-port: "8000"
+        dapr.io/app-protocol: "http"
+        dapr.io/enable-api-logging: "true"
+        dapr.io/log-level: "info"
+        # DAPR sidecar resource limits
+        dapr.io/sidecar-cpu-limit: "0.5"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/sidecar-cpu-request: "0.1"
+        dapr.io/sidecar-memory-request: "64Mi"
+        # mTLS configuration
+        dapr.io/enable-mtls: "true"
+    spec:
+      serviceAccountName: order-service-sa
+      containers:
+      - name: order-service
+        image: myregistry.azurecr.io/order-service:v1
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DAPR_HTTP_PORT
+          value: "3500"
+        - name: DAPR_GRPC_PORT
+          value: "50001"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: default
+spec:
+  selector:
+    app: order-service
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: ClusterIP
+
+---
+# Ingress (optional - for external access)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: order-service-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: order-service.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: order-service
+            port:
+              number: 80
+
+# ====================
+# Deployment Commands
+# ====================
+
+# Apply manifests:
+# kubectl apply -f deploy-aks.yaml
+
+# Verify DAPR sidecar:
+# kubectl get pods -l app=order-service
+# kubectl describe pod -l app=order-service | grep -A 5 "daprd"
+
+# Check DAPR components:
+# dapr components -k
+
+# View logs:
+# kubectl logs -l app=order-service -c order-service
+# kubectl logs -l app=order-service -c daprd
+
+# ====================
+# Troubleshooting
+# ====================
+
+# Check sidecar status:
+# kubectl exec -it {pod-name} -c daprd -- wget -qO- http://localhost:3500/v1.0/healthz
+
+# Test service invocation:
+# kubectl exec -it {pod-name} -- curl http://localhost:3500/v1.0/invoke/order-service/method/health
+
+# Check DAPR dashboard:
+# dapr dashboard -k

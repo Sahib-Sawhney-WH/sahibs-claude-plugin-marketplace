@@ -1,0 +1,143 @@
+# Azure Blob Storage Binding
+# Object storage for files, images, backups, and data lakes
+#
+# Use as:
+#   - Output binding: Upload blobs
+#   - Input binding: Trigger on blob creation
+#
+# Operations: create, get, delete, list
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: blob-storage
+  namespace: default
+spec:
+  type: bindings.azure.blobstorage
+  version: v1
+  metadata:
+  # Required: Storage account name
+  - name: storageAccount
+    value: "{storage-account-name}"
+
+  # Required: Container name
+  - name: container
+    value: "uploads"
+
+  # Authentication: Managed Identity (Recommended)
+  - name: azureClientId
+    value: "{managed-identity-client-id}"
+
+  # Alternative: Storage Account Key
+  # - name: storageAccessKey
+  #   secretKeyRef:
+  #     name: storage-secrets
+  #     key: access-key
+
+  # Alternative: Connection String
+  # - name: connectionString
+  #   secretKeyRef:
+  #     name: storage-secrets
+  #     key: connection-string
+
+  # Optional: Public access level (none, blob, container)
+  - name: publicAccessLevel
+    value: "none"
+
+  # Optional: Decode base64 before saving
+  - name: decodeBase64
+    value: "false"
+
+  # Optional: Get blob name from metadata instead of generating
+  # - name: getBlobRetryCount
+  #   value: "3"
+
+# Output binding - Upload blob:
+# curl -X POST http://localhost:3500/v1.0/bindings/blob-storage \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": "SGVsbG8gV29ybGQh",
+#     "metadata": {
+#       "blobName": "hello.txt",
+#       "contentType": "text/plain"
+#     },
+#     "operation": "create"
+#   }'
+
+# Output binding - Get blob:
+# curl -X POST http://localhost:3500/v1.0/bindings/blob-storage \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {"blobName": "hello.txt"},
+#     "operation": "get"
+#   }'
+
+# Output binding - Delete blob:
+# curl -X POST http://localhost:3500/v1.0/bindings/blob-storage \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {"blobName": "hello.txt"},
+#     "operation": "delete"
+#   }'
+
+# Output binding - List blobs:
+# curl -X POST http://localhost:3500/v1.0/bindings/blob-storage \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {"prefix": "uploads/"},
+#     "operation": "list"
+#   }'
+
+# Python SDK:
+# from dapr.clients import DaprClient
+# import base64
+#
+# with DaprClient() as client:
+#     # Upload file
+#     with open("document.pdf", "rb") as f:
+#         content = base64.b64encode(f.read()).decode("utf-8")
+#
+#     client.invoke_binding(
+#         binding_name="blob-storage",
+#         operation="create",
+#         data=content,
+#         binding_metadata={
+#             "blobName": "documents/document.pdf",
+#             "contentType": "application/pdf"
+#         }
+#     )
+#
+#     # Download file
+#     result = client.invoke_binding(
+#         binding_name="blob-storage",
+#         operation="get",
+#         binding_metadata={"blobName": "documents/document.pdf"}
+#     )
+#     content = base64.b64decode(result.data)
+
+# Input binding - Trigger on blob creation:
+# Add to component metadata:
+#   - name: direction
+#     value: "input"
+#
+# Your app receives POST to /blob-storage when blobs are created:
+# @app.post("/blob-storage")
+# async def handle_blob(request: Request):
+#     blob_name = request.headers.get("x-]blob-name")
+#     data = await request.body()
+#     return {"status": "ok"}
+
+# Local development with Azurite:
+# docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+#   mcr.microsoft.com/azure-storage/azurite
+#
+# Connection string: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1
+
+# Azure CLI setup:
+# az storage account create --name {account} --resource-group {rg} --sku Standard_LRS
+# az storage container create --name uploads --account-name {account}
+
+# Managed Identity setup:
+# IDENTITY_ID=$(az identity show --name dapr-identity --resource-group {rg} --query principalId -o tsv)
+# STORAGE_ID=$(az storage account show --name {account} --resource-group {rg} --query id -o tsv)
+# az role assignment create --role "Storage Blob Data Contributor" --assignee $IDENTITY_ID --scope $STORAGE_ID

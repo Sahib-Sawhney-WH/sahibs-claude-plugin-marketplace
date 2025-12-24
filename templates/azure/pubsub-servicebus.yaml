@@ -1,0 +1,133 @@
+# Azure Service Bus Pub/Sub
+# Enterprise-grade message broker for pub/sub and queuing
+#
+# Features:
+#   - Topics and subscriptions
+#   - Dead-letter queues
+#   - Message sessions
+#   - Duplicate detection
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pubsub
+  namespace: default
+spec:
+  type: pubsub.azure.servicebus.topics
+  version: v1
+  metadata:
+  # Required: Service Bus namespace
+  - name: namespaceName
+    value: "{namespace}.servicebus.windows.net"
+
+  # Authentication: Managed Identity (Recommended)
+  - name: azureClientId
+    value: "{managed-identity-client-id}"
+
+  # Alternative: Service Principal
+  # - name: azureTenantId
+  #   value: "{tenant-id}"
+  # - name: azureClientId
+  #   value: "{client-id}"
+  # - name: azureClientSecret
+  #   secretKeyRef:
+  #     name: servicebus-secrets
+  #     key: client-secret
+
+  # Alternative: Connection String
+  # - name: connectionString
+  #   secretKeyRef:
+  #     name: servicebus-secrets
+  #     key: connection-string
+
+  # Optional: Consumer ID (subscription name prefix)
+  - name: consumerID
+    value: "{app-id}"
+
+  # Optional: Timeout for operations
+  - name: timeoutInSec
+    value: "60"
+
+  # Optional: Handler timeout
+  - name: handlerTimeoutInSec
+    value: "60"
+
+  # Optional: Lock renewal interval
+  - name: lockRenewalInSec
+    value: "20"
+
+  # Optional: Max active messages
+  - name: maxActiveMessages
+    value: "1000"
+
+  # Optional: Max concurrent handlers
+  - name: maxConcurrentHandlers
+    value: "8"
+
+  # Optional: Disable entity management (if topics created externally)
+  # - name: disableEntityManagement
+  #   value: "true"
+
+# Usage - Publish event:
+# curl -X POST http://localhost:3500/v1.0/publish/pubsub/orders \
+#   -H "Content-Type: application/json" \
+#   -d '{"orderId": "12345", "status": "created"}'
+
+# Usage - Subscribe (in your app):
+# 1. Expose GET /dapr/subscribe endpoint returning subscription list
+# 2. Handle POST /{topic} for incoming messages
+
+# Python SDK - Publish:
+# from dapr.clients import DaprClient
+#
+# with DaprClient() as client:
+#     client.publish_event(
+#         pubsub_name="pubsub",
+#         topic_name="orders",
+#         data=json.dumps({"orderId": "12345", "status": "created"}),
+#         data_content_type="application/json"
+#     )
+
+# Python SDK - Subscribe (FastAPI):
+# from fastapi import FastAPI
+# from dapr.ext.fastapi import DaprApp
+#
+# app = FastAPI()
+# dapr_app = DaprApp(app)
+#
+# @dapr_app.subscribe(pubsub="pubsub", topic="orders")
+# async def handle_order(event: dict):
+#     print(f"Received order: {event['data']}")
+#     return {"status": "SUCCESS"}
+
+# Local development:
+# Use Azure Service Bus Emulator or create a dev namespace
+# az servicebus namespace create --name {namespace} --resource-group {rg} --sku Standard
+
+# Azure CLI setup:
+# az servicebus namespace create --name {namespace} --resource-group {rg} --sku Standard
+# az servicebus topic create --namespace-name {namespace} --resource-group {rg} --name orders
+# az servicebus topic subscription create --namespace-name {namespace} --resource-group {rg} --topic-name orders --name order-processor
+
+# Managed Identity setup:
+# IDENTITY_ID=$(az identity show --name dapr-identity --resource-group {rg} --query principalId -o tsv)
+# SERVICEBUS_ID=$(az servicebus namespace show --name {namespace} --resource-group {rg} --query id -o tsv)
+# az role assignment create --role "Azure Service Bus Data Sender" --assignee $IDENTITY_ID --scope $SERVICEBUS_ID
+# az role assignment create --role "Azure Service Bus Data Receiver" --assignee $IDENTITY_ID --scope $SERVICEBUS_ID
+
+---
+# Alternative: Queue-based pub/sub (point-to-point)
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pubsub-queue
+spec:
+  type: pubsub.azure.servicebus.queues
+  version: v1
+  metadata:
+  - name: namespaceName
+    value: "{namespace}.servicebus.windows.net"
+  - name: azureClientId
+    value: "{managed-identity-client-id}"
+  - name: consumerID
+    value: "{app-id}"

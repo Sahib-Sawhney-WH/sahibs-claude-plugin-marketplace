@@ -53,6 +53,9 @@ When the user runs `/dapr:component`:
   - `pubsub servicebus` - Azure Service Bus
   - `secrets keyvault` - Azure Key Vault
   - `binding blob` - Azure Blob Storage
+  - `binding eventhubs` - Azure Event Hubs (streaming/IoT)
+  - `binding signalr` - Azure SignalR (real-time WebSocket)
+  - `binding queuestorage` - Azure Queue Storage (simple queues)
 
   **AWS:**
   - `state dynamodb` - AWS DynamoDB
@@ -93,6 +96,9 @@ When the user runs `/dapr:component`:
 /dapr:component state cosmos
 /dapr:component pubsub servicebus
 /dapr:component secrets keyvault
+/dapr:component binding eventhubs
+/dapr:component binding signalr
+/dapr:component binding queuestorage
 
 # AWS
 /dapr:component state dynamodb

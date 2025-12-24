@@ -1,0 +1,180 @@
+# Azure Event Hubs Binding
+# High-throughput event streaming for IoT, telemetry, and real-time analytics
+#
+# Use as:
+#   - Output binding: Send events to Event Hubs
+#   - Input binding: Receive events from Event Hubs
+#
+# Capabilities:
+#   - Millions of events per second
+#   - Partitioned for parallel processing
+#   - Checkpoint-based consumption
+#   - Capture to Azure Storage/Data Lake
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: eventhubs
+  namespace: default
+spec:
+  type: bindings.azure.eventhubs
+  version: v1
+  metadata:
+  # Required: Event Hubs namespace connection string or components
+  # Option 1: Full connection string (includes hub name)
+  # - name: connectionString
+  #   secretKeyRef:
+  #     name: eventhubs-secrets
+  #     key: connection-string
+
+  # Option 2: Managed Identity (Recommended)
+  - name: eventHubNamespace
+    value: "{namespace}.servicebus.windows.net"
+  - name: eventHub
+    value: "{hub-name}"
+  - name: azureClientId
+    value: "{managed-identity-client-id}"
+
+  # Required for input binding: Consumer group
+  - name: consumerGroup
+    value: "$Default"
+
+  # Required for input binding: Checkpoint storage
+  - name: storageAccountName
+    value: "{storage-account}"
+  - name: storageContainerName
+    value: "eventhubs-checkpoints"
+  # Use managed identity for storage too
+  # Or use connection string:
+  # - name: storageConnectionString
+  #   secretKeyRef:
+  #     name: storage-secrets
+  #     key: connection-string
+
+  # Optional: Partition key (for ordered processing)
+  # - name: partitionKey
+  #   value: "device-id"
+
+  # Optional: Batch settings for input binding
+  - name: maxBatchSize
+    value: "100"
+
+  # Optional: Enable bulk publish for output binding
+  - name: enableBulkPublish
+    value: "true"
+
+# Output binding - Send event:
+# curl -X POST http://localhost:3500/v1.0/bindings/eventhubs \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {
+#       "deviceId": "sensor-001",
+#       "temperature": 23.5,
+#       "timestamp": "2025-01-15T10:30:00Z"
+#     },
+#     "metadata": {
+#       "partitionKey": "sensor-001"
+#     },
+#     "operation": "create"
+#   }'
+
+# Output binding - Send batch:
+# curl -X POST http://localhost:3500/v1.0/bindings/eventhubs \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": [
+#       {"deviceId": "sensor-001", "value": 23.5},
+#       {"deviceId": "sensor-002", "value": 24.1}
+#     ],
+#     "operation": "create"
+#   }'
+
+# Python SDK - Output:
+# from dapr.clients import DaprClient
+# import json
+#
+# with DaprClient() as client:
+#     # Single event
+#     client.invoke_binding(
+#         binding_name="eventhubs",
+#         operation="create",
+#         data=json.dumps({
+#             "deviceId": "sensor-001",
+#             "temperature": 23.5,
+#             "timestamp": datetime.utcnow().isoformat()
+#         }),
+#         binding_metadata={"partitionKey": "sensor-001"}
+#     )
+#
+#     # Batch events
+#     events = [
+#         {"deviceId": f"sensor-{i}", "value": random.uniform(20, 30)}
+#         for i in range(100)
+#     ]
+#     client.invoke_binding(
+#         binding_name="eventhubs",
+#         operation="create",
+#         data=json.dumps(events)
+#     )
+
+# Python SDK - Input (FastAPI):
+# @app.post("/eventhubs")
+# async def handle_events(request: Request):
+#     events = await request.json()
+#     partition_key = request.headers.get("x-]partition-key")
+#
+#     for event in events:
+#         print(f"Processing: {event}")
+#         # Process event...
+#
+#     return {"status": "ok"}
+
+# Azure CLI setup:
+# # Create Event Hubs namespace
+# az eventhubs namespace create \
+#   --name {namespace} \
+#   --resource-group {rg} \
+#   --sku Standard \
+#   --enable-kafka false
+#
+# # Create event hub
+# az eventhubs eventhub create \
+#   --name {hub-name} \
+#   --namespace-name {namespace} \
+#   --resource-group {rg} \
+#   --partition-count 4 \
+#   --message-retention 7
+#
+# # Create consumer group
+# az eventhubs eventhub consumer-group create \
+#   --name my-consumer-group \
+#   --eventhub-name {hub-name} \
+#   --namespace-name {namespace} \
+#   --resource-group {rg}
+
+# Managed Identity setup:
+# IDENTITY_ID=$(az identity show --name dapr-identity --resource-group {rg} --query principalId -o tsv)
+# EVENTHUBS_ID=$(az eventhubs namespace show --name {namespace} --resource-group {rg} --query id -o tsv)
+#
+# # For sending events
+# az role assignment create --role "Azure Event Hubs Data Sender" --assignee $IDENTITY_ID --scope $EVENTHUBS_ID
+#
+# # For receiving events
+# az role assignment create --role "Azure Event Hubs Data Receiver" --assignee $IDENTITY_ID --scope $EVENTHUBS_ID
+#
+# # For checkpoint storage
+# STORAGE_ID=$(az storage account show --name {storage} --resource-group {rg} --query id -o tsv)
+# az role assignment create --role "Storage Blob Data Contributor" --assignee $IDENTITY_ID --scope $STORAGE_ID
+
+# Use cases:
+# - IoT telemetry ingestion
+# - Real-time analytics
+# - Log aggregation
+# - Event-driven microservices
+# - Stream processing with Azure Stream Analytics
+
+# Performance tips:
+# - Use partition keys for ordered processing within partition
+# - Increase partition count for higher throughput
+# - Use batch operations for high-volume scenarios
+# - Enable Capture for long-term storage

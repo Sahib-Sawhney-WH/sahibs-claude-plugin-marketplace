@@ -36,6 +36,17 @@
       },
       {
         "matcher": "Write|Edit",
+        "glob": "**/templates/azure/*.yaml",
+        "hooks": [
+          {
+            "type": "prompt",
+            "description": "Validate Azure template configuration",
+            "prompt": "An Azure template file was modified at \\. Validate Azure-specific best practices: (1) Uses managed identity (azureClientId) instead of connection strings where possible, (2) For Event Hubs: consumerGroup and storageAccountName are specified, (3) For SignalR: hub name is specified, (4) For Queue Storage: queueName and appropriate visibility timeout, (5) For all bindings: scopes are properly configured for managed identity. Report any issues found."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
         "glob": "**/pluggable/*.py",
         "hooks": [
           {

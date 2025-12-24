@@ -1,0 +1,207 @@
+# Azure Container Apps Deployment with DAPR
+# Serverless container hosting with built-in DAPR integration
+#
+# Features:
+#   - Managed DAPR sidecar injection
+#   - KEDA-based autoscaling
+#   - Managed identity integration
+#   - Traffic splitting for blue-green deployments
+
+# Prerequisites:
+# 1. Azure CLI with containerapp extension
+# 2. Container Apps environment with DAPR enabled
+# 3. User-assigned managed identity with required permissions
+
+# ====================
+# Environment Setup
+# ====================
+
+# Create resource group:
+# az group create --name {rg} --location {region}
+
+# Create Container Apps environment with DAPR:
+# az containerapp env create \
+#   --name {env-name} \
+#   --resource-group {rg} \
+#   --location {region} \
+#   --enable-workload-profiles
+
+# Create managed identity:
+# az identity create --name dapr-identity --resource-group {rg}
+
+# ====================
+# DAPR Components in Container Apps
+# ====================
+
+# Add Cosmos DB state store:
+# az containerapp env dapr-component set \
+#   --name {env-name} \
+#   --resource-group {rg} \
+#   --dapr-component-name statestore \
+#   --yaml - <<EOF
+# componentType: state.azure.cosmosdb
+# version: v1
+# metadata:
+# - name: url
+#   value: "https://{account}.documents.azure.com:443/"
+# - name: database
+#   value: "daprdb"
+# - name: collection
+#   value: "state"
+# - name: azureClientId
+#   value: "{managed-identity-client-id}"
+# EOF
+
+# Add Service Bus pub/sub:
+# az containerapp env dapr-component set \
+#   --name {env-name} \
+#   --resource-group {rg} \
+#   --dapr-component-name pubsub \
+#   --yaml - <<EOF
+# componentType: pubsub.azure.servicebus.topics
+# version: v1
+# metadata:
+# - name: namespaceName
+#   value: "{namespace}.servicebus.windows.net"
+# - name: azureClientId
+#   value: "{managed-identity-client-id}"
+# EOF
+
+# ====================
+# Container App Deployment
+# ====================
+
+# Deploy with DAPR enabled:
+# az containerapp create \
+#   --name order-service \
+#   --resource-group {rg} \
+#   --environment {env-name} \
+#   --image myregistry.azurecr.io/order-service:v1 \
+#   --target-port 8000 \
+#   --ingress external \
+#   --min-replicas 1 \
+#   --max-replicas 10 \
+#   --cpu 0.5 \
+#   --memory 1.0Gi \
+#   --user-assigned {managed-identity-resource-id} \
+#   --dapr-enabled \
+#   --dapr-app-id order-service \
+#   --dapr-app-port 8000 \
+#   --dapr-app-protocol http \
+#   --env-vars "AZURE_CLIENT_ID={managed-identity-client-id}"
+
+# ====================
+# YAML Manifest (alternative)
+# ====================
+
+# Save as container-app.yaml and deploy with:
+# az containerapp create --resource-group {rg} --yaml container-app.yaml
+
+# container-app.yaml:
+apiVersion: 2023-05-01
+name: order-service
+type: Microsoft.App/containerApps
+location: eastus
+identity:
+  type: UserAssigned
+  userAssignedIdentities:
+    "/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/dapr-identity": {}
+properties:
+  managedEnvironmentId: "/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.App/managedEnvironments/{env-name}"
+  configuration:
+    activeRevisionsMode: Multiple
+    ingress:
+      external: true
+      targetPort: 8000
+      traffic:
+        - latestRevision: true
+          weight: 100
+    dapr:
+      enabled: true
+      appId: order-service
+      appPort: 8000
+      appProtocol: http
+      enableApiLogging: true
+      logLevel: info
+    secrets:
+      - name: registry-password
+        value: "{acr-password}"
+    registries:
+      - server: myregistry.azurecr.io
+        username: myregistry
+        passwordSecretRef: registry-password
+  template:
+    containers:
+      - name: order-service
+        image: myregistry.azurecr.io/order-service:v1
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+        env:
+          - name: AZURE_CLIENT_ID
+            value: "{managed-identity-client-id}"
+          - name: DAPR_HTTP_PORT
+            value: "3500"
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          - type: Readiness
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+    scale:
+      minReplicas: 1
+      maxReplicas: 10
+      rules:
+        - name: http-scaling
+          http:
+            metadata:
+              concurrentRequests: "100"
+
+# ====================
+# Blue-Green Deployment
+# ====================
+
+# 1. Deploy new revision:
+# az containerapp update \
+#   --name order-service \
+#   --resource-group {rg} \
+#   --image myregistry.azurecr.io/order-service:v2
+
+# 2. Test new revision (0% traffic):
+# az containerapp revision list --name order-service --resource-group {rg}
+# curl https://order-service--{revision}.{env}.{region}.azurecontainerapps.io/health
+
+# 3. Shift traffic gradually:
+# az containerapp ingress traffic set \
+#   --name order-service \
+#   --resource-group {rg} \
+#   --revision-weight order-service--v1=90 order-service--v2=10
+
+# 4. Complete rollout:
+# az containerapp ingress traffic set \
+#   --name order-service \
+#   --resource-group {rg} \
+#   --revision-weight order-service--v2=100
+
+# ====================
+# Troubleshooting
+# ====================
+
+# View logs:
+# az containerapp logs show --name order-service --resource-group {rg} --follow
+
+# View DAPR sidecar logs:
+# az containerapp logs show --name order-service --resource-group {rg} --container daprd --follow
+
+# Check revisions:
+# az containerapp revision list --name order-service --resource-group {rg} -o table
+
+# Restart app:
+# az containerapp revision restart --name order-service --resource-group {rg} --revision {revision-name}

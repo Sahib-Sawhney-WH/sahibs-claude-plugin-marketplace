@@ -1,0 +1,182 @@
+# Azure Queue Storage Binding
+# Simple, reliable message queuing for decoupled architectures
+#
+# Use as:
+#   - Output binding: Send messages to queue
+#   - Input binding: Process messages from queue
+#
+# Features:
+#   - Up to 64KB per message
+#   - Visibility timeout for at-least-once delivery
+#   - Message TTL up to 7 days
+#   - Low cost for high volume
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: queue-storage
+  namespace: default
+spec:
+  type: bindings.azure.storagequeues
+  version: v1
+  metadata:
+  # Required: Storage account name
+  - name: storageAccount
+    value: "{storage-account-name}"
+
+  # Required: Queue name
+  - name: queue
+    value: "orders"
+
+  # Authentication: Managed Identity (Recommended)
+  - name: azureClientId
+    value: "{managed-identity-client-id}"
+
+  # Alternative: Storage Account Key
+  # - name: storageAccessKey
+  #   secretKeyRef:
+  #     name: storage-secrets
+  #     key: access-key
+
+  # Alternative: Connection String
+  # - name: connectionString
+  #   secretKeyRef:
+  #     name: storage-secrets
+  #     key: connection-string
+
+  # Optional: Visibility timeout (seconds) - how long message is hidden after dequeue
+  - name: visibilityTimeout
+    value: "30"
+
+  # Optional: Message TTL (seconds) - default 7 days
+  - name: ttlInSeconds
+    value: "604800"
+
+  # Optional: Decode base64 (if messages are base64 encoded)
+  - name: decodeBase64
+    value: "false"
+
+  # Optional: Polling interval for input binding (milliseconds)
+  - name: pollingInterval
+    value: "1000"
+
+# Output binding - Send message:
+# curl -X POST http://localhost:3500/v1.0/bindings/queue-storage \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {
+#       "orderId": "12345",
+#       "customer": "john@example.com",
+#       "items": [{"sku": "WIDGET-001", "qty": 2}]
+#     },
+#     "operation": "create"
+#   }'
+
+# Output binding - Send with TTL override:
+# curl -X POST http://localhost:3500/v1.0/bindings/queue-storage \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {"urgent": true, "message": "Process immediately"},
+#     "metadata": {
+#       "ttlInSeconds": "3600"
+#     },
+#     "operation": "create"
+#   }'
+
+# Python SDK - Output:
+# from dapr.clients import DaprClient
+# import json
+#
+# with DaprClient() as client:
+#     # Send order to queue
+#     client.invoke_binding(
+#         binding_name="queue-storage",
+#         operation="create",
+#         data=json.dumps({
+#             "orderId": "12345",
+#             "customer": "john@example.com",
+#             "total": 99.99,
+#             "items": [
+#                 {"sku": "WIDGET-001", "qty": 2, "price": 49.99}
+#             ]
+#         })
+#     )
+#
+#     # Send with custom TTL
+#     client.invoke_binding(
+#         binding_name="queue-storage",
+#         operation="create",
+#         data=json.dumps({"type": "reminder", "message": "Follow up call"}),
+#         binding_metadata={"ttlInSeconds": "86400"}  # 24 hours
+#     )
+
+# Python SDK - Input (FastAPI):
+# @app.post("/queue-storage")
+# async def process_order(request: Request):
+#     message = await request.json()
+#
+#     try:
+#         # Process the order
+#         order_id = message["orderId"]
+#         await process_order(message)
+#
+#         # Return success - message will be deleted
+#         return {"status": "SUCCESS"}
+#
+#     except Exception as e:
+#         # Return retry - message will reappear after visibility timeout
+#         return {"status": "RETRY"}
+#
+#     # Or return drop to discard:
+#     # return {"status": "DROP"}
+
+# Input binding configuration (add to component):
+# The component automatically polls for messages when your app
+# exposes a POST endpoint matching the binding name.
+#
+# Message handling:
+# - Return {"status": "SUCCESS"} - message deleted
+# - Return {"status": "RETRY"} - message reappears after visibility timeout
+# - Return {"status": "DROP"} - message deleted without processing
+
+# Azure CLI setup:
+# # Create storage account
+# az storage account create \
+#   --name {storage-account} \
+#   --resource-group {rg} \
+#   --sku Standard_LRS \
+#   --kind StorageV2
+#
+# # Create queue
+# az storage queue create \
+#   --name orders \
+#   --account-name {storage-account}
+
+# Managed Identity setup:
+# IDENTITY_ID=$(az identity show --name dapr-identity --resource-group {rg} --query principalId -o tsv)
+# STORAGE_ID=$(az storage account show --name {storage-account} --resource-group {rg} --query id -o tsv)
+# az role assignment create --role "Storage Queue Data Contributor" --assignee $IDENTITY_ID --scope $STORAGE_ID
+
+# Local development with Azurite:
+# docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+#   mcr.microsoft.com/azure-storage/azurite
+#
+# Connection string for Azurite:
+# DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1
+
+# Use cases:
+# - Order processing queues
+# - Background job scheduling
+# - Work distribution
+# - Decoupling microservices
+# - Rate limiting / throttling
+
+# Queue Storage vs Service Bus:
+# | Feature | Queue Storage | Service Bus |
+# |---------|---------------|-------------|
+# | Message size | 64KB | 256KB-100MB |
+# | Ordering | No guarantee | FIFO option |
+# | Dead-letter | No | Yes |
+# | Transactions | No | Yes |
+# | Cost | Very low | Higher |
+# | Use case | Simple queuing | Enterprise messaging |

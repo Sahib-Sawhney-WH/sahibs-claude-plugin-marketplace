@@ -1,0 +1,135 @@
+# Azure Event Grid Binding
+# Event routing service for reactive, event-driven architectures
+#
+# Use as:
+#   - Output binding: Publish events to Event Grid topics
+#   - Input binding: Subscribe to Event Grid events
+#
+# Supports both Event Grid Schema and CloudEvents
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: eventgrid
+  namespace: default
+spec:
+  type: bindings.azure.eventgrid
+  version: v1
+  metadata:
+  # Required: Event Grid topic endpoint
+  - name: topicEndpoint
+    value: "https://{topic-name}.{region}-1.eventgrid.azure.net/api/events"
+
+  # Required: Access key
+  - name: accessKey
+    secretKeyRef:
+      name: eventgrid-secrets
+      key: access-key
+
+  # Optional: Event type (for filtering)
+  - name: eventType
+    value: "MyApp.Events.OrderCreated"
+
+  # Optional: Subject (for filtering)
+  - name: eventSubject
+    value: "/orders/"
+
+# Output binding - Publish event:
+# curl -X POST http://localhost:3500/v1.0/bindings/eventgrid \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {
+#       "orderId": "12345",
+#       "customer": "john@example.com",
+#       "total": 99.99
+#     },
+#     "metadata": {
+#       "eventType": "MyApp.Events.OrderCreated",
+#       "subject": "/orders/12345",
+#       "dataVersion": "1.0"
+#     },
+#     "operation": "create"
+#   }'
+
+# Python SDK:
+# from dapr.clients import DaprClient
+# import json
+#
+# with DaprClient() as client:
+#     client.invoke_binding(
+#         binding_name="eventgrid",
+#         operation="create",
+#         data=json.dumps({
+#             "orderId": "12345",
+#             "customer": "john@example.com",
+#             "total": 99.99
+#         }),
+#         binding_metadata={
+#             "eventType": "MyApp.Events.OrderCreated",
+#             "subject": "/orders/12345",
+#             "dataVersion": "1.0"
+#         }
+#     )
+
+# Input binding - Subscribe to events:
+# 1. Create Event Grid subscription pointing to your app
+# 2. Handle POST to /eventgrid endpoint:
+#
+# @app.post("/eventgrid")
+# async def handle_event(request: Request):
+#     event = await request.json()
+#     event_type = request.headers.get("aeg-event-type")
+#
+#     # Handle subscription validation
+#     if event_type == "SubscriptionValidation":
+#         validation_code = event[0]["data"]["validationCode"]
+#         return {"validationResponse": validation_code}
+#
+#     # Handle actual events
+#     print(f"Received event: {event}")
+#     return {"status": "ok"}
+
+# Azure CLI setup:
+# # Create Event Grid topic
+# az eventgrid topic create --name {topic-name} --resource-group {rg} --location {region}
+#
+# # Get topic endpoint
+# az eventgrid topic show --name {topic-name} --resource-group {rg} --query endpoint -o tsv
+#
+# # Get access key
+# az eventgrid topic key list --name {topic-name} --resource-group {rg} --query key1 -o tsv
+#
+# # Create subscription (webhook to your app)
+# az eventgrid event-subscription create \
+#   --name my-subscription \
+#   --source-resource-id $(az eventgrid topic show --name {topic-name} --resource-group {rg} --query id -o tsv) \
+#   --endpoint https://my-app.azurecontainerapps.io/eventgrid \
+#   --event-delivery-schema cloudeventschemav1_0
+
+# Event types:
+# - Custom events: MyApp.Events.OrderCreated
+# - Azure resources: Microsoft.Storage.BlobCreated
+# - System topics: Microsoft.Resources.ResourceWriteSuccess
+
+# Best practices:
+# - Use CloudEvents schema for interoperability
+# - Implement retry logic for failed deliveries
+# - Set up dead-letter destination for undeliverable events
+# - Use subject filtering to reduce event noise
+
+---
+# System topic example (react to Azure resource events):
+# Create a system topic for storage account blob events:
+#
+# az eventgrid system-topic create \
+#   --name storage-events \
+#   --resource-group {rg} \
+#   --source /subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Storage/storageAccounts/{account} \
+#   --topic-type Microsoft.Storage.StorageAccounts
+#
+# az eventgrid system-topic event-subscription create \
+#   --name blob-created-subscription \
+#   --system-topic-name storage-events \
+#   --resource-group {rg} \
+#   --endpoint https://my-app.azurecontainerapps.io/eventgrid \
+#   --included-event-types Microsoft.Storage.BlobCreated

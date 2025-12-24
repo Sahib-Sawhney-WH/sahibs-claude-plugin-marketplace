@@ -1,0 +1,173 @@
+# Azure SignalR Service Binding
+# Real-time WebSocket communication for live updates and notifications
+#
+# Output binding only - broadcast messages to connected clients
+#
+# Use cases:
+#   - Live dashboards
+#   - Chat applications
+#   - Real-time notifications
+#   - Collaborative editing
+#   - Gaming leaderboards
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: signalr
+  namespace: default
+spec:
+  type: bindings.azure.signalr
+  version: v1
+  metadata:
+  # Required: SignalR connection string
+  - name: connectionString
+    secretKeyRef:
+      name: signalr-secrets
+      key: connection-string
+
+  # Required: Hub name
+  - name: hub
+    value: "notifications"
+
+# Output binding - Broadcast to all clients:
+# curl -X POST http://localhost:3500/v1.0/bindings/signalr \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {
+#       "type": "orderUpdate",
+#       "orderId": "12345",
+#       "status": "shipped"
+#     },
+#     "metadata": {
+#       "target": "orderUpdated"
+#     },
+#     "operation": "create"
+#   }'
+
+# Output binding - Send to specific user:
+# curl -X POST http://localhost:3500/v1.0/bindings/signalr \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {"message": "Your order has shipped!"},
+#     "metadata": {
+#       "target": "notification",
+#       "userId": "user-123"
+#     },
+#     "operation": "create"
+#   }'
+
+# Output binding - Send to group:
+# curl -X POST http://localhost:3500/v1.0/bindings/signalr \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {"message": "Team meeting in 5 minutes"},
+#     "metadata": {
+#       "target": "announcement",
+#       "group": "engineering-team"
+#     },
+#     "operation": "create"
+#   }'
+
+# Python SDK:
+# from dapr.clients import DaprClient
+# import json
+#
+# with DaprClient() as client:
+#     # Broadcast to all clients
+#     client.invoke_binding(
+#         binding_name="signalr",
+#         operation="create",
+#         data=json.dumps({
+#             "type": "priceUpdate",
+#             "symbol": "MSFT",
+#             "price": 425.50
+#         }),
+#         binding_metadata={
+#             "target": "stockUpdate"  # Client-side method to invoke
+#         }
+#     )
+#
+#     # Send to specific user
+#     client.invoke_binding(
+#         binding_name="signalr",
+#         operation="create",
+#         data=json.dumps({"message": "You have a new message"}),
+#         binding_metadata={
+#             "target": "notification",
+#             "userId": "user-456"
+#         }
+#     )
+#
+#     # Send to group
+#     client.invoke_binding(
+#         binding_name="signalr",
+#         operation="create",
+#         data=json.dumps({"alert": "System maintenance in 1 hour"}),
+#         binding_metadata={
+#             "target": "systemAlert",
+#             "group": "admins"
+#         }
+#     )
+
+# Client-side JavaScript (browser):
+# const connection = new signalR.HubConnectionBuilder()
+#     .withUrl("https://{signalr-name}.service.signalr.net/client/?hub=notifications")
+#     .withAutomaticReconnect()
+#     .build();
+#
+# connection.on("orderUpdated", (data) => {
+#     console.log("Order update:", data);
+# });
+#
+# connection.on("notification", (data) => {
+#     console.log("Notification:", data);
+# });
+#
+# await connection.start();
+
+# Group management (requires custom negotiate endpoint):
+# Add user to group:
+# await connection.invoke("JoinGroup", "engineering-team");
+#
+# Remove user from group:
+# await connection.invoke("LeaveGroup", "engineering-team");
+
+# Azure CLI setup:
+# # Create SignalR service
+# az signalr create \
+#   --name {signalr-name} \
+#   --resource-group {rg} \
+#   --sku Standard_S1 \
+#   --service-mode Serverless
+#
+# # Get connection string
+# az signalr key list --name {signalr-name} --resource-group {rg} --query primaryConnectionString -o tsv
+
+# Negotiate endpoint (required for client connections):
+# Your app must expose a /negotiate endpoint that returns SignalR connection info:
+#
+# from azure.functions import HttpRequest, HttpResponse
+# import azure.functions as func
+#
+# @app.route("/negotiate")
+# async def negotiate(request: Request):
+#     # Generate client access token
+#     # This requires Azure SignalR SDK or REST API call
+#     return {
+#         "url": f"https://{signalr-name}.service.signalr.net/client/?hub=notifications",
+#         "accessToken": "{generated-token}"
+#     }
+
+# Use cases:
+# - Real-time dashboards (stock prices, metrics)
+# - Live notifications (order updates, alerts)
+# - Chat and messaging
+# - Collaborative editing (Google Docs-style)
+# - Gaming (leaderboards, multiplayer sync)
+# - IoT device status updates
+
+# Best practices:
+# - Use groups for targeted messaging
+# - Implement reconnection logic on clients
+# - Use Serverless mode for DAPR integration
+# - Scale SignalR units based on connection count
