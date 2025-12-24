@@ -6,6 +6,7 @@ from dapr.clients import DaprClient
 from dapr.actor import Actor, ActorInterface, ActorProxy, actormethod
 from dapr.ext.fastapi import DaprActor
 from datetime import datetime, timedelta
+import os
 import logging
 import statistics
 
@@ -303,4 +304,4 @@ async def configure_device(device_id: str, config: DeviceConfig):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8001")))

@@ -9,6 +9,7 @@ from dapr.actor.runtime.runtime import ActorRuntime
 from dapr.ext.fastapi import DaprActor
 from opentelemetry import trace
 import uuid
+import os
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -266,4 +267,4 @@ async def commit_reservation(product_id: str, request: ReleaseRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8002")))

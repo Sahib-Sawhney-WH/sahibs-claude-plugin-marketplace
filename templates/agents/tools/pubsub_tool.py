@@ -18,6 +18,7 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List, Callable
 import json
+import os
 import logging
 import asyncio
 from datetime import datetime
@@ -475,4 +476,4 @@ async def publish(request: PublishRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")))

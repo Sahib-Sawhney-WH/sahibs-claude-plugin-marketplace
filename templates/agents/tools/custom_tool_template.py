@@ -17,6 +17,9 @@ from typing import Optional, List
 import logging
 import httpx
 from datetime import datetime
+from simpleeval import simple_eval
+
+# Note: Install simpleeval with: pip install simpleeval
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -77,7 +80,7 @@ def calculate_expression(expression: str) -> str:
     import math
 
     # Define safe operations
-    safe_dict = {
+    safe_functions = {
         "abs": abs,
         "round": round,
         "min": min,
@@ -88,12 +91,15 @@ def calculate_expression(expression: str) -> str:
         "sin": math.sin,
         "cos": math.cos,
         "tan": math.tan,
+    }
+    safe_names = {
         "pi": math.pi,
         "e": math.e,
     }
 
     try:
-        result = eval(expression, {"__builtins__": {}}, safe_dict)
+        # Using simpleeval for safe expression evaluation (prevents code injection)
+        result = simple_eval(expression, functions=safe_functions, names=safe_names)
         return str(result)
     except Exception as e:
         return f"Error: {str(e)}"

@@ -23,6 +23,9 @@ spec:
     #   secretKeyRef:
     #     name: redis-secrets
     #     key: password
+  # Enable TLS for production (disable for local development)
+  - name: enableTLS
+    value: "true"
 
     # ==========================================================================
     # Azure App Configuration (Production)

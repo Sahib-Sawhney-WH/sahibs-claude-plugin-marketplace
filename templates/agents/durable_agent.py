@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field
 from fastapi import FastAPI, HTTPException
 import uvicorn
 import asyncio
+import os
 import logging
 import uuid
 
@@ -316,4 +317,4 @@ async def chat(message: str):
 # =============================================================================
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")))

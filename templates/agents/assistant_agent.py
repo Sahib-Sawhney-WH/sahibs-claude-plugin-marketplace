@@ -11,8 +11,11 @@ Usage:
 from dapr_agents import AssistantAgent, tool
 from dapr_agents.memory import ConversationMemory
 from pydantic import BaseModel, Field
+from simpleeval import simple_eval
 import os
 import logging
+
+# Note: Install simpleeval with: pip install simpleeval
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -71,8 +74,9 @@ def calculate(input: CalculateInput) -> str:
     logger.info(f"Calculating: {input.expression}")
     try:
         # Safe evaluation of mathematical expressions
-        allowed_names = {"abs": abs, "round": round, "min": min, "max": max}
-        result = eval(input.expression, {"__builtins__": {}}, allowed_names)
+        allowed_functions = {"abs": abs, "round": round, "min": min, "max": max}
+        # Using simpleeval for safe expression evaluation (prevents code injection)
+        result = simple_eval(input.expression, functions=allowed_functions)
         return f"Result: {result}"
     except Exception as e:
         return f"Error: Could not evaluate expression. {str(e)}"
