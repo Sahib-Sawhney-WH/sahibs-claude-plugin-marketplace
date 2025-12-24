@@ -1,12 +1,29 @@
-# DAPR Plugin for Claude Code v2.4
+# DAPR Plugin for Claude Code v2.5
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](https://github.com/Sahib-Sawhney-WH/dapr-claude-plugin/releases/tag/v2.4.0)
+[![Version](https://img.shields.io/badge/version-2.5.0-blue.svg)](https://github.com/Sahib-Sawhney-WH/dapr-claude-plugin/releases/tag/v2.5.0)
 [![GitHub stars](https://img.shields.io/github/stars/Sahib-Sawhney-WH/dapr-claude-plugin?style=social)](https://github.com/Sahib-Sawhney-WH/dapr-claude-plugin)
 
 A comprehensive Claude Code plugin for developing, deploying, and debugging DAPR (Distributed Application Runtime) applications with Python across Azure, AWS, and GCP.
 
-## What's New in v2.4
+## What's New in v2.5
+
+### Security Improvements
+- **Safe Expression Evaluation** - Replaced unsafe `eval()` with `simpleeval` library in agent templates
+- **Secure Redis Defaults** - Redis templates now use `secretKeyRef` instead of empty passwords
+- **TLS by Default** - All Redis component templates enable TLS encryption
+- **Localhost Binding** - Templates default to `127.0.0.1` instead of `0.0.0.0` (configurable via `HOST` env var)
+- **Authorization Examples** - Added commented auth middleware patterns to service templates
+
+### Testing Improvements
+- **Shared Validators Module** - New `tests/validators.py` with 12+ reusable validation functions
+- **Pytest Configuration** - Added `pytest.ini` with markers for unit, integration, and security tests
+- **Testing Guide** - New `TESTING.md` documentation for running and writing tests
+
+### Documentation
+- **Code of Conduct** - Added contributor code of conduct with enforcement contact
+
+## v2.4 Features
 
 - **Dedicated Azure Templates** - Consolidated `templates/azure/` directory with 10 templates matching AWS/GCP structure
 - **New Azure Bindings** - Event Hubs (streaming/IoT), SignalR (real-time WebSocket), Queue Storage (simple queues)
@@ -322,6 +339,7 @@ templates/
 
 tests/               # Plugin self-tests for validation logic
 ├── conftest.py      # Pytest fixtures
+├── validators.py    # Shared validation functions
 ├── test_component_validation.py
 ├── test_middleware_validation.py
 ├── test_binding_validation.py
@@ -378,11 +396,23 @@ See \ for detailed version matrix.
 
 | Plugin Version | DAPR Runtime | Python SDK | Notes |
 |----------------|--------------|------------|-------|
+| v2.5.x | 1.12 - 1.16 | >=1.12.0 | Security hardened defaults |
 | v2.4.x | 1.12 - 1.16 | >=1.12.0 | Full feature support |
 | v2.3.x | 1.12 - 1.15 | >=1.12.0 | All 12 building blocks |
 | v2.1.x - v2.2.x | 1.12+ | >=1.12.0 | DAPR Agents requires 1.14+ |
 
 ## Changelog
+
+### v2.5.0
+- Security: Replaced `eval()` with `simpleeval` library in agent templates
+- Security: Redis templates use `secretKeyRef` instead of empty passwords
+- Security: Enabled TLS by default in Redis component templates
+- Security: Changed default host binding from `0.0.0.0` to `127.0.0.1`
+- Security: Added authorization middleware examples to service templates
+- Testing: Created shared `tests/validators.py` module with 12+ validation functions
+- Testing: Added `pytest.ini` configuration with test markers
+- Docs: Added `TESTING.md` guide for running and writing tests
+- Docs: Added `CODE_OF_CONDUCT.md` with enforcement contact
 
 ### v2.4.0
 - Dedicated \ directory with 10 templates (Cosmos DB, Service Bus, Key Vault, Blob Storage, Event Grid, Event Hubs, SignalR, Queue Storage, Container Apps, AKS)

@@ -1,6 +1,6 @@
 ﻿{
   "name": "dapr",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Comprehensive DAPR development plugin for Python microservices with multi-cloud support (Azure, AWS, GCP). Covers all 12 DAPR building blocks plus DAPR Agents AI framework. Features: state management (Cosmos DB, DynamoDB, Firestore), pub/sub (Service Bus, SNS/SQS, GCP Pub/Sub), 15+ binding types (HTTP, Kafka, RabbitMQ, MQTT, databases, email, Event Hubs, SignalR), secrets (Key Vault, Secrets Manager), HTTP middleware (OAuth2, OPA, rate limiting), pluggable component development. Includes dedicated Azure templates, AI agents, testing, CI/CD, observability, version compatibility matrix, and security scanning.",
   "author": {
     "name": "sahib"
