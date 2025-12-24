@@ -1,8 +1,16 @@
-# DAPR Plugin for Claude Code v2.3
+# DAPR Plugin for Claude Code v2.4
 
 A comprehensive Claude Code plugin for developing, deploying, and debugging DAPR (Distributed Application Runtime) applications with Python across Azure, AWS, and GCP.
 
-## What's New in v2.3
+## What's New in v2.4
+
+- **Dedicated Azure Templates** - Consolidated `templates/azure/` directory with 10 templates matching AWS/GCP structure
+- **New Azure Bindings** - Event Hubs (streaming/IoT), SignalR (real-time WebSocket), Queue Storage (simple queues)
+- **Version Compatibility Matrix** - `COMPATIBILITY.md` documenting DAPR 1.10-1.16 support
+- **Plugin Self-Tests** - Pytest test suite validating hook logic for components, middleware, bindings, and agents
+- **Azure Template Validation Hook** - Automatic validation for Azure templates
+
+## v2.3 Features
 
 - **12 Binding Templates** - HTTP, Kafka, RabbitMQ, MQTT, PostgreSQL, MySQL, Redis, SMTP, InfluxDB, LocalStorage, GraphQL, Cron
 - **Error Codes Reference** - 80+ DAPR error codes with troubleshooting steps
@@ -27,7 +35,7 @@ A comprehensive Claude Code plugin for developing, deploying, and debugging DAPR
 
 | Cloud | State Store | Pub/Sub | Secrets | Bindings | Deployment |
 |-------|-------------|---------|---------|----------|------------|
-| **Azure** | Cosmos DB | Service Bus | Key Vault | Blob Storage | Container Apps, AKS |
+| **Azure** | Cosmos DB | Service Bus | Key Vault | Blob, Event Grid, Event Hubs, SignalR, Queue Storage | Container Apps, AKS |
 | **AWS** | DynamoDB | SNS/SQS | Secrets Manager | S3, SQS, Kinesis, SES | EKS, ECS Fargate |
 | **GCP** | Firestore | Pub/Sub | Secret Manager | Cloud Storage | GKE, Cloud Run |
 
@@ -296,15 +304,24 @@ spec:
 
 ```
 templates/
-├── azure/           # Azure components (Cosmos, Service Bus, Key Vault)
-├── aws/             # AWS components (DynamoDB, SNS/SQS, S3)
-├── gcp/             # GCP components (Firestore, Pub/Sub, GCS)
+├── azure/           # Azure templates (10 files) - Cosmos DB, Service Bus, Key Vault,
+│                    # Blob Storage, Event Grid, Event Hubs, SignalR, Queue Storage,
+│                    # Container Apps, AKS deployment
+├── aws/             # AWS components (DynamoDB, SNS/SQS, S3, EKS, ECS)
+├── gcp/             # GCP components (Firestore, Pub/Sub, GCS, GKE, Cloud Run)
 ├── bindings/        # 12 binding templates
 ├── middleware/      # HTTP middleware (OAuth2, OPA, etc.)
 ├── pluggable/       # Custom component templates
 ├── agents/          # DAPR Agents templates
 ├── workflows/       # Workflow patterns
 └── testing/         # Test fixtures and mocks
+
+tests/               # Plugin self-tests for validation logic
+├── conftest.py      # Pytest fixtures
+├── test_component_validation.py
+├── test_middleware_validation.py
+├── test_binding_validation.py
+└── test_agent_validation.py
 ```
 
 ## Hooks (Auto-Validation)
@@ -351,7 +368,24 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 GCP_PROJECT_ID=my-project
 ```
 
+## Version Compatibility
+
+See \ for detailed version matrix.
+
+| Plugin Version | DAPR Runtime | Python SDK | Notes |
+|----------------|--------------|------------|-------|
+| v2.4.x | 1.12 - 1.16 | >=1.12.0 | Full feature support |
+| v2.3.x | 1.12 - 1.15 | >=1.12.0 | All 12 building blocks |
+| v2.1.x - v2.2.x | 1.12+ | >=1.12.0 | DAPR Agents requires 1.14+ |
+
 ## Changelog
+
+### v2.4.0
+- Dedicated \ directory with 10 templates (Cosmos DB, Service Bus, Key Vault, Blob Storage, Event Grid, Event Hubs, SignalR, Queue Storage, Container Apps, AKS)
+- Version compatibility matrix (\)
+- Plugin self-tests for hook validation logic (5 test files)
+- Azure template validation hook
+- Updated component command with Event Hubs, SignalR, Queue Storage
 
 ### v2.3.0
 - 12 binding templates (HTTP, Kafka, RabbitMQ, MQTT, databases, email)
