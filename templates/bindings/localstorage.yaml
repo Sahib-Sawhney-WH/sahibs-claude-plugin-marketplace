@@ -1,0 +1,133 @@
+# Local Storage Binding
+# Read and write files to the local filesystem
+#
+# Use as:
+#   - Output binding: Write files
+#   - Input binding: Watch directory for changes
+#
+# Operations: create (write), get (read), list, delete
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: local-files
+  namespace: default
+spec:
+  type: bindings.localstorage
+  version: v1
+  metadata:
+  # Required: Root directory path
+  - name: rootPath
+    value: "/data/files"
+
+# Write a file (create operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/local-files \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": "Hello, World!",
+#     "metadata": {"fileName": "hello.txt"},
+#     "operation": "create"
+#   }'
+
+# Write binary data (base64 encoded):
+# curl -X POST http://localhost:3500/v1.0/bindings/local-files \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": "SGVsbG8gV29ybGQh",
+#     "metadata": {
+#       "fileName": "data.bin",
+#       "contentType": "application/octet-stream"
+#     },
+#     "operation": "create"
+#   }'
+
+# Read a file (get operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/local-files \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {"fileName": "hello.txt"},
+#     "operation": "get"
+#   }'
+
+# List files (list operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/local-files \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {"fileName": "subdir/"},
+#     "operation": "list"
+#   }'
+
+# Delete a file (delete operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/local-files \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {"fileName": "old-file.txt"},
+#     "operation": "delete"
+#   }'
+
+# Python SDK example:
+# from dapr.clients import DaprClient
+# import json
+# import base64
+#
+# with DaprClient() as client:
+#     # Write JSON file
+#     client.invoke_binding(
+#         binding_name="local-files",
+#         operation="create",
+#         data=json.dumps({"key": "value"}),
+#         binding_metadata={
+#             "fileName": "config/settings.json",
+#             "contentType": "application/json"
+#         }
+#     )
+#
+#     # Read file
+#     result = client.invoke_binding(
+#         binding_name="local-files",
+#         operation="get",
+#         binding_metadata={"fileName": "config/settings.json"}
+#     )
+#     content = result.data.decode('utf-8')
+#
+#     # List directory
+#     result = client.invoke_binding(
+#         binding_name="local-files",
+#         operation="list",
+#         binding_metadata={"fileName": "config/"}
+#     )
+#     files = json.loads(result.data)
+
+# Input binding - Watch for file changes:
+# Configure the binding with input capabilities
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: file-watcher
+spec:
+  type: bindings.localstorage
+  version: v1
+  metadata:
+  - name: rootPath
+    value: "/data/inbox"
+
+# Your app receives POST to /file-watcher when files change:
+# @app.post("/file-watcher")
+# async def handle_file_change(request: Request):
+#     data = await request.json()
+#     file_name = request.headers.get("x-]]file-name")
+#     print(f"File changed: {file_name}")
+#     return {"status": "ok"}
+
+# Use cases:
+# - File upload/download services
+# - Configuration file management
+# - Log file processing
+# - Data import/export
+# - Temporary file storage
+
+# Security notes:
+# - Set rootPath to restrict access to specific directories
+# - Validate file names to prevent path traversal
+# - Consider file size limits for uploads

@@ -25,6 +25,28 @@
       },
       {
         "matcher": "Write|Edit",
+        "glob": "**/bindings/*.yaml",
+        "hooks": [
+          {
+            "type": "prompt",
+            "description": "Validate DAPR binding configuration",
+            "prompt": "A DAPR binding file was modified at $FILE. Validate: (1) Connection strings and passwords use secretKeyRef, (2) For HTTP bindings: URLs should use HTTPS in production, (3) For database bindings (postgresql, mysql): parameterized queries are used to prevent SQL injection, (4) For SMTP: credentials use secretKeyRef, (5) For Kafka/RabbitMQ: authentication is configured for production. Report any security issues or misconfigurations."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "glob": "**/pluggable/*.py",
+        "hooks": [
+          {
+            "type": "prompt",
+            "description": "Validate pluggable component implementation",
+            "prompt": "A pluggable component file was modified at $FILE. Validate: (1) gRPC servicer implements required interface methods, (2) Socket path is configurable via environment variable, (3) Init method handles all metadata from component YAML, (4) Features method declares supported capabilities, (5) Error handling uses gRPC status codes. Report any issues found."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
         "glob": "**/dapr.yaml",
         "hooks": [
           {

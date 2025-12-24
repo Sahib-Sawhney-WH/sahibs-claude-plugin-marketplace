@@ -1,0 +1,83 @@
+# Cron Binding
+# Schedule periodic tasks using cron expressions
+#
+# Input binding only - triggers your app on schedule
+# Your app receives POST to /{binding-name} endpoint
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: scheduler
+  namespace: default
+spec:
+  type: bindings.cron
+  version: v1
+  metadata:
+  # Cron schedule expression
+  - name: schedule
+    value: "@every 5m"
+
+  # Optional: Custom route (default: component name)
+  # - name: route
+  #   value: "/scheduled-task"
+
+# Schedule formats:
+#
+# Cron expressions (6 fields):
+#   ┌──────────── second (0-59)
+#   │ ┌────────── minute (0-59)
+#   │ │ ┌──────── hour (0-23)
+#   │ │ │ ┌────── day of month (1-31)
+#   │ │ │ │ ┌──── month (1-12 or JAN-DEC)
+#   │ │ │ │ │ ┌── day of week (0-6 or SUN-SAT)
+#   │ │ │ │ │ │
+#   * * * * * *
+#
+# Examples:
+#   "0 30 * * * *"     - Every hour at 30 minutes
+#   "0 0 9 * * *"      - Daily at 9:00 AM
+#   "0 0 0 * * 0"      - Every Sunday at midnight
+#   "0 */15 * * * *"   - Every 15 minutes
+#
+# Predefined schedules:
+#   "@every 1s"        - Every second
+#   "@every 5m"        - Every 5 minutes
+#   "@every 1h"        - Every hour
+#   "@hourly"          - Every hour at minute 0
+#   "@daily"           - Every day at midnight
+#   "@weekly"          - Every Sunday at midnight
+#   "@monthly"         - First day of month at midnight
+#   "@yearly"          - January 1st at midnight
+
+---
+# Example: Multiple schedules
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: hourly-cleanup
+spec:
+  type: bindings.cron
+  version: v1
+  metadata:
+  - name: schedule
+    value: "@hourly"
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: daily-report
+spec:
+  type: bindings.cron
+  version: v1
+  metadata:
+  - name: schedule
+    value: "0 0 8 * * *"  # 8:00 AM daily
+
+# App handler example (Python):
+#
+# @app.post("/scheduler")
+# async def handle_schedule(request: Request):
+#     # Triggered every 5 minutes
+#     await run_scheduled_task()
+#     return {"status": "ok"}

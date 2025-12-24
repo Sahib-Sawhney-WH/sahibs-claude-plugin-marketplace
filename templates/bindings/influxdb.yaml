@@ -1,0 +1,122 @@
+# InfluxDB Binding
+# Time-series database for metrics and IoT data
+#
+# Output binding only - write time-series data
+# Operations: create (write points), query (Flux queries)
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: influxdb-metrics
+  namespace: default
+spec:
+  type: bindings.influxdb
+  version: v1
+  metadata:
+  # Required: InfluxDB server URL
+  - name: url
+    value: "http://localhost:8086"
+
+  # Required: Authentication token
+  - name: token
+    secretKeyRef:
+      name: influxdb-secrets
+      key: token
+
+  # Required: Organization name
+  - name: org
+    value: "my-org"
+
+  # Required: Bucket name
+  - name: bucket
+    value: "my-bucket"
+
+# Write data point (create operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/influxdb-metrics \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {
+#       "measurement": "temperature",
+#       "tags": {"location": "office", "sensor": "temp-01"},
+#       "fields": {"value": 23.5, "humidity": 45.2}
+#     },
+#     "operation": "create"
+#   }'
+
+# Write multiple data points:
+# curl -X POST http://localhost:3500/v1.0/bindings/influxdb-metrics \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": [
+#       {"measurement": "cpu", "tags": {"host": "server1"}, "fields": {"usage": 45.2}},
+#       {"measurement": "cpu", "tags": {"host": "server2"}, "fields": {"usage": 32.1}}
+#     ],
+#     "operation": "create"
+#   }'
+
+# Query data (query operation with Flux):
+# curl -X POST http://localhost:3500/v1.0/bindings/influxdb-metrics \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {
+#       "raw": "from(bucket:\"my-bucket\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"temperature\")"
+#     },
+#     "operation": "query"
+#   }'
+
+# Python SDK example:
+# from dapr.clients import DaprClient
+# import json
+# import time
+#
+# with DaprClient() as client:
+#     # Write sensor data
+#     client.invoke_binding(
+#         binding_name="influxdb-metrics",
+#         operation="create",
+#         data=json.dumps({
+#             "measurement": "sensor_readings",
+#             "tags": {
+#                 "device_id": "sensor-001",
+#                 "location": "warehouse-a"
+#             },
+#             "fields": {
+#                 "temperature": 22.5,
+#                 "humidity": 48.3,
+#                 "pressure": 1013.25
+#             },
+#             "timestamp": int(time.time() * 1e9)  # nanoseconds
+#         })
+#     )
+#
+#     # Query last hour of data
+#     result = client.invoke_binding(
+#         binding_name="influxdb-metrics",
+#         operation="query",
+#         binding_metadata={
+#             "raw": '''
+#                 from(bucket: "my-bucket")
+#                 |> range(start: -1h)
+#                 |> filter(fn: (r) => r._measurement == "sensor_readings")
+#                 |> mean()
+#             '''
+#         }
+#     )
+#     data = json.loads(result.data)
+
+# Local development with Docker:
+# docker run -d -p 8086:8086 \
+#   -e DOCKER_INFLUXDB_INIT_MODE=setup \
+#   -e DOCKER_INFLUXDB_INIT_USERNAME=admin \
+#   -e DOCKER_INFLUXDB_INIT_PASSWORD=adminpassword \
+#   -e DOCKER_INFLUXDB_INIT_ORG=my-org \
+#   -e DOCKER_INFLUXDB_INIT_BUCKET=my-bucket \
+#   -e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-token \
+#   influxdb:2
+
+# Use cases:
+# - IoT sensor data collection
+# - Application metrics and monitoring
+# - Real-time analytics
+# - Event logging with timestamps
+# - Financial tick data

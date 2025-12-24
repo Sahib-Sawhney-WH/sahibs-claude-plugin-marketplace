@@ -1,0 +1,97 @@
+# RabbitMQ Binding
+# Message queuing with RabbitMQ
+#
+# Use as:
+#   - Output binding: Publish messages to queues
+#   - Input binding: Consume messages from queues
+#
+# For pub/sub pattern, use pubsub.rabbitmq instead
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: rabbitmq-queue
+  namespace: default
+spec:
+  type: bindings.rabbitmq
+  version: v1
+  metadata:
+  # Required: RabbitMQ host connection string
+  - name: host
+    value: "amqp://localhost:5672"
+  # Or use secretKeyRef for credentials
+  # - name: host
+  #   secretKeyRef:
+  #     name: rabbitmq-secrets
+  #     key: connection-string
+
+  # Required: Queue name
+  - name: queueName
+    value: "my-queue"
+
+  # Optional: Exchange name (if not using default)
+  # - name: exchangeName
+  #   value: "my-exchange"
+
+  # Optional: Exchange type (direct, fanout, topic, headers)
+  # - name: exchangeType
+  #   value: "direct"
+
+  # Optional: Routing key for exchange binding
+  # - name: routingKey
+  #   value: "my-routing-key"
+
+  # Optional: Durable queue (survives broker restart)
+  - name: durable
+    value: "true"
+
+  # Optional: Auto-delete queue when unused
+  - name: deleteWhenUnused
+    value: "false"
+
+  # Optional: Exclusive queue (single consumer)
+  - name: exclusive
+    value: "false"
+
+  # Optional: Prefetch count (messages to prefetch)
+  - name: prefetchCount
+    value: "10"
+
+  # Optional: Auto-acknowledge messages
+  - name: autoAck
+    value: "false"
+
+  # Optional: Reconnect interval on failure
+  - name: reconnectWait
+    value: "5s"
+
+  # Optional: TTL for messages (milliseconds)
+  # - name: ttlInSeconds
+  #   value: "60"
+
+# Output binding - Publish message:
+# curl -X POST http://localhost:3500/v1.0/bindings/rabbitmq-queue \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {"orderId": "12345", "status": "pending"},
+#     "metadata": {
+#       "contentType": "application/json",
+#       "priority": "5"
+#     },
+#     "operation": "create"
+#   }'
+
+# Input binding - Your app receives POST to /rabbitmq-queue:
+# @app.post("/rabbitmq-queue")
+# async def handle_message(request: Request):
+#     message = await request.json()
+#     # Process message
+#     return {"status": "ok"}  # ACK the message
+
+# Local development with Docker:
+# docker run -d -p 5672:5672 -p 15672:15672 \
+#   -e RABBITMQ_DEFAULT_USER=guest \
+#   -e RABBITMQ_DEFAULT_PASS=guest \
+#   rabbitmq:3-management
+#
+# Management UI: http://localhost:15672 (guest/guest)

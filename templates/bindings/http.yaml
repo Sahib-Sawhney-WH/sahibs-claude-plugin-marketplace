@@ -1,0 +1,95 @@
+# HTTP Binding
+# Make HTTP calls to external APIs and receive webhooks
+#
+# Use as:
+#   - Output binding: Call external REST APIs
+#   - Input binding: Receive webhooks at /http endpoint
+#
+# Operations: create, get, post, put, patch, delete, options, head
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: http-api
+  namespace: default
+spec:
+  type: bindings.http
+  version: v1
+  metadata:
+  # Base URL for requests
+  - name: url
+    value: "https://api.example.com"
+
+  # Optional: Max idle connections
+  - name: maxIdleConns
+    value: "10"
+
+  # Optional: Max connections per host
+  - name: maxConnsPerHost
+    value: "10"
+
+  # Optional: Max idle connections per host
+  - name: maxIdleConnsPerHost
+    value: "2"
+
+  # Optional: Idle connection timeout
+  - name: idleConnTimeout
+    value: "90s"
+
+  # Optional: Response header timeout
+  - name: responseHeaderTimeout
+    value: "30s"
+
+  # Optional: Security mode (default: none)
+  # Options: none, oauth2clientcredentials, oauth2accesstoken
+  # - name: securityToken
+  #   value: "Bearer your-token"
+
+  # OAuth2 Client Credentials Flow
+  # - name: securityTokenSource
+  #   value: "oauth2clientcredentials"
+  # - name: oauth2TokenURL
+  #   value: "https://auth.example.com/token"
+  # - name: oauth2ClientID
+  #   secretKeyRef:
+  #     name: http-auth
+  #     key: client-id
+  # - name: oauth2ClientSecret
+  #   secretKeyRef:
+  #     name: http-auth
+  #     key: client-secret
+  # - name: oauth2Scopes
+  #   value: "api.read api.write"
+
+# Output binding usage:
+#
+# POST (default operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/http-api \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {"key": "value"},
+#     "metadata": {
+#       "path": "/users",
+#       "Content-Type": "application/json"
+#     },
+#     "operation": "post"
+#   }'
+#
+# GET with path:
+# curl -X POST http://localhost:3500/v1.0/bindings/http-api \
+#   -d '{
+#     "metadata": {"path": "/users/123"},
+#     "operation": "get"
+#   }'
+#
+# Custom headers:
+# "metadata": {
+#   "path": "/api/resource",
+#   "X-Custom-Header": "value",
+#   "Authorization": "Bearer token"
+# }
+
+# Input binding (webhook receiver):
+# Dapr will listen for POST requests and forward to your app at /http-api
+# Configure external service to send webhooks to:
+# http://your-dapr-endpoint:3500/v1.0/bindings/http-api

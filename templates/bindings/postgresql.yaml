@@ -1,0 +1,96 @@
+# PostgreSQL Binding
+# Execute SQL queries and commands against PostgreSQL
+#
+# Output binding only - execute queries
+# Operations: exec (DDL/DML), query (SELECT), close
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: postgres-db
+  namespace: default
+spec:
+  type: bindings.postgresql
+  version: v1
+  metadata:
+  # Required: Connection string
+  - name: connectionString
+    secretKeyRef:
+      name: postgres-secrets
+      key: connection-string
+  # Format: "host=localhost user=postgres password=secret dbname=mydb port=5432 sslmode=disable"
+  # Or URL: "postgres://user:password@localhost:5432/mydb?sslmode=disable"
+
+  # Optional: Connection pool settings
+  # - name: maxConns
+  #   value: "10"
+  # - name: connectionMaxIdleTime
+  #   value: "5m"
+
+# Execute INSERT/UPDATE/DELETE (exec operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/postgres-db \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "operation": "exec",
+#     "metadata": {
+#       "sql": "INSERT INTO users (name, email) VALUES ($1, $2)",
+#       "params": "[\"John Doe\", \"john@example.com\"]"
+#     }
+#   }'
+
+# Execute SELECT (query operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/postgres-db \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "operation": "query",
+#     "metadata": {
+#       "sql": "SELECT id, name, email FROM users WHERE id = $1",
+#       "params": "[1]"
+#     }
+#   }'
+
+# Create table (exec operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/postgres-db \
+#   -d '{
+#     "operation": "exec",
+#     "metadata": {
+#       "sql": "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(100), email VARCHAR(255))"
+#     }
+#   }'
+
+# Python SDK example:
+# from dapr.clients import DaprClient
+#
+# with DaprClient() as client:
+#     # Insert
+#     result = client.invoke_binding(
+#         binding_name="postgres-db",
+#         operation="exec",
+#         binding_metadata={
+#             "sql": "INSERT INTO orders (product, quantity) VALUES ($1, $2)",
+#             "params": '["Widget", 5]'
+#         }
+#     )
+#
+#     # Query
+#     result = client.invoke_binding(
+#         binding_name="postgres-db",
+#         operation="query",
+#         binding_metadata={
+#             "sql": "SELECT * FROM orders WHERE quantity > $1",
+#             "params": '[3]'
+#         }
+#     )
+#     rows = json.loads(result.data)
+
+# Local development with Docker:
+# docker run -d -p 5432:5432 \
+#   -e POSTGRES_USER=postgres \
+#   -e POSTGRES_PASSWORD=secret \
+#   -e POSTGRES_DB=mydb \
+#   postgres:15
+
+# Security notes:
+# - Always use parameterized queries ($1, $2) to prevent SQL injection
+# - Store connection strings in secret stores
+# - Use least-privilege database users

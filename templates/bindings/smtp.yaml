@@ -1,0 +1,137 @@
+# SMTP Binding
+# Send emails via SMTP servers
+#
+# Output binding only - send emails
+# Operation: create
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: smtp-email
+  namespace: default
+spec:
+  type: bindings.smtp
+  version: v1
+  metadata:
+  # Required: SMTP server host
+  - name: host
+    value: "smtp.example.com"
+
+  # Required: SMTP port
+  - name: port
+    value: "587"
+  # Common ports: 25 (unencrypted), 465 (SSL), 587 (TLS/STARTTLS)
+
+  # Required: Authentication
+  - name: user
+    secretKeyRef:
+      name: smtp-secrets
+      key: username
+  - name: password
+    secretKeyRef:
+      name: smtp-secrets
+      key: password
+
+  # Optional: Skip TLS verification (not for production)
+  - name: skipTLSVerify
+    value: "false"
+
+  # Optional: Email from address (can override in request)
+  - name: emailFrom
+    value: "noreply@example.com"
+
+  # Optional: Email to address (can override in request)
+  # - name: emailTo
+  #   value: "recipient@example.com"
+
+  # Optional: Email CC
+  # - name: emailCC
+  #   value: "cc@example.com"
+
+  # Optional: Email BCC
+  # - name: emailBCC
+  #   value: "bcc@example.com"
+
+  # Optional: Subject (can override in request)
+  # - name: subject
+  #   value: "Default Subject"
+
+  # Optional: Priority (1=high, 3=normal, 5=low)
+  # - name: priority
+  #   value: "3"
+
+# Send email:
+# curl -X POST http://localhost:3500/v1.0/bindings/smtp-email \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": "Hello, this is the email body!",
+#     "metadata": {
+#       "emailTo": "recipient@example.com",
+#       "emailFrom": "sender@example.com",
+#       "subject": "Test Email from DAPR"
+#     },
+#     "operation": "create"
+#   }'
+
+# Send HTML email:
+# curl -X POST http://localhost:3500/v1.0/bindings/smtp-email \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": "<html><body><h1>Hello!</h1><p>This is HTML content.</p></body></html>",
+#     "metadata": {
+#       "emailTo": "recipient@example.com",
+#       "subject": "HTML Email",
+#       "contentType": "text/html"
+#     },
+#     "operation": "create"
+#   }'
+
+# Python SDK example:
+# from dapr.clients import DaprClient
+#
+# with DaprClient() as client:
+#     # Send simple email
+#     client.invoke_binding(
+#         binding_name="smtp-email",
+#         operation="create",
+#         data="Your order #12345 has been shipped!",
+#         binding_metadata={
+#             "emailTo": "customer@example.com",
+#             "emailFrom": "orders@mystore.com",
+#             "subject": "Order Shipped"
+#         }
+#     )
+#
+#     # Send to multiple recipients
+#     client.invoke_binding(
+#         binding_name="smtp-email",
+#         operation="create",
+#         data="Team meeting at 3pm",
+#         binding_metadata={
+#             "emailTo": "alice@example.com,bob@example.com",
+#             "emailCC": "manager@example.com",
+#             "subject": "Meeting Reminder"
+#         }
+#     )
+
+# Local development with MailHog:
+# docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
+# SMTP: localhost:1025, Web UI: http://localhost:8025
+
+# Common SMTP configurations:
+#
+# Gmail (requires App Password):
+#   host: smtp.gmail.com
+#   port: 587
+#
+# Outlook/Office365:
+#   host: smtp.office365.com
+#   port: 587
+#
+# AWS SES:
+#   host: email-smtp.us-east-1.amazonaws.com
+#   port: 587
+#
+# SendGrid:
+#   host: smtp.sendgrid.net
+#   port: 587

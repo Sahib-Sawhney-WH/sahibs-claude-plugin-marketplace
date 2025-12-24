@@ -1,0 +1,116 @@
+# MQTT Binding
+# Lightweight messaging for IoT devices
+#
+# Use as:
+#   - Output binding: Publish to MQTT topics
+#   - Input binding: Subscribe to MQTT topics
+#
+# Supports MQTT 3.1.1 protocol
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: mqtt-binding
+  namespace: default
+spec:
+  type: bindings.mqtt3
+  version: v1
+  metadata:
+  # Required: MQTT broker URL
+  - name: url
+    value: "tcp://localhost:1883"
+  # TLS: "ssl://localhost:8883"
+  # WebSocket: "ws://localhost:9001"
+
+  # Required: Topic to publish/subscribe
+  - name: topic
+    value: "sensors/temperature"
+
+  # Optional: Client ID (auto-generated if not set)
+  # - name: clientID
+  #   value: "dapr-client-01"
+
+  # Optional: QoS level (0, 1, 2)
+  - name: qos
+    value: "1"
+  # 0 = At most once (fire and forget)
+  # 1 = At least once (acknowledged delivery)
+  # 2 = Exactly once (assured delivery)
+
+  # Optional: Retain last message
+  - name: retain
+    value: "false"
+
+  # Optional: Clean session
+  - name: cleanSession
+    value: "true"
+
+  # Authentication
+  # - name: username
+  #   secretKeyRef:
+  #     name: mqtt-secrets
+  #     key: username
+  # - name: password
+  #   secretKeyRef:
+  #     name: mqtt-secrets
+  #     key: password
+
+  # TLS Configuration
+  # - name: caCert
+  #   secretKeyRef:
+  #     name: mqtt-tls
+  #     key: ca.crt
+  # - name: clientCert
+  #   secretKeyRef:
+  #     name: mqtt-tls
+  #     key: client.crt
+  # - name: clientKey
+  #   secretKeyRef:
+  #     name: mqtt-tls
+  #     key: client.key
+
+  # Optional: Back off settings for reconnection
+  - name: backOffMaxRetries
+    value: "10"
+
+# Output binding - Publish sensor data:
+# curl -X POST http://localhost:3500/v1.0/bindings/mqtt-binding \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {"sensorId": "temp-01", "value": 23.5, "unit": "celsius"},
+#     "metadata": {
+#       "topic": "sensors/temperature/room1"
+#     },
+#     "operation": "create"
+#   }'
+
+# Input binding - Receive sensor data:
+# @app.post("/mqtt-binding")
+# async def handle_sensor_data(request: Request):
+#     data = await request.json()
+#     print(f"Sensor reading: {data}")
+#     return {"status": "ok"}
+
+# Local development with Mosquitto:
+# docker run -d -p 1883:1883 -p 9001:9001 eclipse-mosquitto
+#
+# Test with mosquitto_pub/sub:
+# mosquitto_sub -t "sensors/#" -v
+# mosquitto_pub -t "sensors/temperature" -m '{"value": 22.5}'
+
+---
+# Example: Multiple topic subscriptions
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: mqtt-sensors
+spec:
+  type: bindings.mqtt3
+  version: v1
+  metadata:
+  - name: url
+    value: "tcp://localhost:1883"
+  - name: topic
+    value: "sensors/#"  # Wildcard subscription
+  - name: qos
+    value: "1"

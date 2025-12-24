@@ -1,0 +1,116 @@
+# Redis Binding
+# In-memory data structure store for caching and messaging
+#
+# Output binding only
+# Operations: create (SET), get (GET), delete (DEL)
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: redis-binding
+  namespace: default
+spec:
+  type: bindings.redis
+  version: v1
+  metadata:
+  # Required: Redis host
+  - name: redisHost
+    value: "localhost:6379"
+
+  # Optional: Password
+  # - name: redisPassword
+  #   secretKeyRef:
+  #     name: redis-secrets
+  #     key: password
+
+  # Optional: Database number (0-15)
+  - name: redisDB
+    value: "0"
+
+  # Optional: Enable TLS
+  - name: enableTLS
+    value: "false"
+
+  # Optional: Connection pool settings
+  # - name: redisMaxRetries
+  #   value: "3"
+  # - name: redisMinRetryInterval
+  #   value: "8ms"
+  # - name: redisMaxRetryInterval
+  #   value: "512ms"
+  # - name: dialTimeout
+  #   value: "5s"
+  # - name: readTimeout
+  #   value: "3s"
+  # - name: writeTimeout
+  #   value: "3s"
+  # - name: poolSize
+  #   value: "10"
+
+  # Redis Sentinel (high availability)
+  # - name: sentinelMasterName
+  #   value: "mymaster"
+  # - name: redisHost
+  #   value: "sentinel1:26379,sentinel2:26379,sentinel3:26379"
+
+  # Redis Cluster
+  # - name: redisType
+  #   value: "cluster"
+  # - name: redisHost
+  #   value: "node1:6379,node2:6379,node3:6379"
+
+# Set a value (create operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/redis-binding \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {"user": "john", "score": 100},
+#     "metadata": {"key": "user:123"},
+#     "operation": "create"
+#   }'
+
+# Get a value (get operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/redis-binding \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {"key": "user:123"},
+#     "operation": "get"
+#   }'
+
+# Delete a value (delete operation):
+# curl -X POST http://localhost:3500/v1.0/bindings/redis-binding \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {"key": "user:123"},
+#     "operation": "delete"
+#   }'
+
+# Python SDK example:
+# from dapr.clients import DaprClient
+# import json
+#
+# with DaprClient() as client:
+#     # Set value with TTL
+#     client.invoke_binding(
+#         binding_name="redis-binding",
+#         operation="create",
+#         data=json.dumps({"session": "data"}),
+#         binding_metadata={"key": "session:abc", "ttlInSeconds": "3600"}
+#     )
+#
+#     # Get value
+#     result = client.invoke_binding(
+#         binding_name="redis-binding",
+#         operation="get",
+#         binding_metadata={"key": "session:abc"}
+#     )
+#     data = json.loads(result.data)
+
+# Local development with Docker:
+# docker run -d -p 6379:6379 redis:7-alpine
+
+# Use cases:
+# - Session caching
+# - Rate limiting counters
+# - Leaderboards
+# - Real-time analytics
+# - Message queues (use List operations)

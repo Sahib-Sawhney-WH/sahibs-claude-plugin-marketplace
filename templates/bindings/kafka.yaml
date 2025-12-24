@@ -1,0 +1,102 @@
+# Kafka Binding
+# High-throughput message streaming with Apache Kafka
+#
+# Use as:
+#   - Output binding: Produce messages to topics
+#   - Input binding: Consume messages from topics
+#
+# For pub/sub pattern, use pubsub.kafka instead
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka-binding
+  namespace: default
+spec:
+  type: bindings.kafka
+  version: v1
+  metadata:
+  # Required: Kafka broker addresses
+  - name: brokers
+    value: "localhost:9092"
+
+  # Required: Topic name
+  - name: topics
+    value: "my-topic"
+
+  # Optional: Consumer group (for input binding)
+  - name: consumerGroup
+    value: "my-consumer-group"
+
+  # Optional: Auth mechanism (none, mtls, oidc)
+  - name: authType
+    value: "none"
+
+  # Optional: Initial offset (oldest, newest)
+  - name: initialOffset
+    value: "newest"
+
+  # Optional: Max message bytes
+  - name: maxMessageBytes
+    value: "1048576"
+
+  # Optional: Consume retry settings
+  - name: consumeRetryEnabled
+    value: "true"
+  - name: consumeRetryInterval
+    value: "100ms"
+
+  # SASL Authentication (if needed)
+  # - name: authType
+  #   value: "password"
+  # - name: saslUsername
+  #   secretKeyRef:
+  #     name: kafka-secrets
+  #     key: username
+  # - name: saslPassword
+  #   secretKeyRef:
+  #     name: kafka-secrets
+  #     key: password
+  # - name: saslMechanism
+  #   value: "PLAIN"  # or SCRAM-SHA-256, SCRAM-SHA-512
+
+  # TLS Configuration
+  # - name: authType
+  #   value: "mtls"
+  # - name: caCert
+  #   secretKeyRef:
+  #     name: kafka-tls
+  #     key: ca.crt
+  # - name: clientCert
+  #   secretKeyRef:
+  #     name: kafka-tls
+  #     key: client.crt
+  # - name: clientKey
+  #   secretKeyRef:
+  #     name: kafka-tls
+  #     key: client.key
+
+# Output binding - Produce message:
+# curl -X POST http://localhost:3500/v1.0/bindings/kafka-binding \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "data": {"orderId": "12345", "status": "created"},
+#     "metadata": {
+#       "key": "order-12345",
+#       "partition": "0"
+#     },
+#     "operation": "create"
+#   }'
+
+# Input binding - Your app receives POST to /kafka-binding:
+# @app.post("/kafka-binding")
+# async def handle_kafka_message(request: Request):
+#     message = await request.json()
+#     print(f"Received: {message}")
+#     return {"status": "ok"}
+
+# Local development with Docker:
+# docker run -p 9092:9092 \
+#   -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
+#   -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 \
+#   confluentinc/cp-kafka:latest

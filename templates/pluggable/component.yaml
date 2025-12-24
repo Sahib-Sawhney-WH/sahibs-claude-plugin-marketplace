@@ -1,0 +1,135 @@
+# Pluggable Component Registration
+# =================================
+#
+# Register your custom pluggable component with DAPR.
+# The component communicates via Unix Domain Socket.
+#
+# Socket path convention:
+#   /tmp/dapr-components-sockets/<component-name>.sock
+#
+# For Kubernetes, mount the socket directory as a shared volume
+# between your component container and the DAPR sidecar.
+
+# ====================
+# State Store Example
+# ====================
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: my-state-store
+  namespace: default
+spec:
+  type: state.my-custom-store
+  version: v1
+  metadata:
+  # Your component-specific configuration
+  - name: connectionString
+    secretKeyRef:
+      name: my-secrets
+      key: connection-string
+  # Optional: Connection pool settings
+  - name: maxConnections
+    value: "10"
+
+---
+# ====================
+# Pub/Sub Example
+# ====================
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: my-pubsub
+  namespace: default
+spec:
+  type: pubsub.my-custom-broker
+  version: v1
+  metadata:
+  - name: brokerUrl
+    value: "my-broker:9092"
+  - name: topic
+    value: "events"
+
+---
+# ====================
+# Binding Example
+# ====================
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: my-binding
+  namespace: default
+spec:
+  type: bindings.my-custom-binding
+  version: v1
+  metadata:
+  - name: endpoint
+    value: "https://api.example.com"
+  - name: apiKey
+    secretKeyRef:
+      name: my-secrets
+      key: api-key
+
+---
+# ===============================================
+# Kubernetes Deployment with Pluggable Component
+# ===============================================
+#
+# Deploy your pluggable component alongside your app.
+# Share the socket directory between containers.
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: my-app
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: my-app
+#   template:
+#     metadata:
+#       labels:
+#         app: my-app
+#       annotations:
+#         dapr.io/enabled: "true"
+#         dapr.io/app-id: "my-app"
+#         dapr.io/pluggable-components: "my-state-store"
+#         # Tell DAPR where to find component sockets
+#         dapr.io/unix-domain-socket-path: "/tmp/dapr-components-sockets"
+#     spec:
+#       containers:
+#       # Your application container
+#       - name: app
+#         image: my-app:latest
+#         ports:
+#         - containerPort: 3000
+#
+#       # Your pluggable component container
+#       - name: my-state-store
+#         image: my-state-store:latest
+#         env:
+#         - name: DAPR_COMPONENT_SOCKET_PATH
+#           value: "/tmp/dapr-components-sockets/my-state-store.sock"
+#         volumeMounts:
+#         - name: dapr-components-sockets
+#           mountPath: /tmp/dapr-components-sockets
+#
+#       volumes:
+#       - name: dapr-components-sockets
+#         emptyDir: {}
+
+# ===============================================
+# Local Development Setup
+# ===============================================
+#
+# 1. Start your pluggable component:
+#    python state-store.py
+#
+# 2. Start DAPR with pluggable component path:
+#    dapr run --app-id my-app \
+#             --components-path ./components \
+#             --unix-domain-socket /tmp/dapr-components-sockets \
+#             -- python app.py
+#
+# 3. Your component socket should be at:
+#    /tmp/dapr-components-sockets/my-state-store.sock

@@ -1,0 +1,146 @@
+# GraphQL Binding
+# Execute GraphQL queries and mutations against GraphQL endpoints
+#
+# Output binding only
+# Operations: query, mutation
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: graphql-api
+  namespace: default
+spec:
+  type: bindings.graphql
+  version: v1
+  metadata:
+  # Required: GraphQL endpoint URL
+  - name: endpoint
+    value: "https://api.example.com/graphql"
+
+  # Optional: Authentication header
+  # - name: header:Authorization
+  #   secretKeyRef:
+  #     name: graphql-secrets
+  #     key: auth-header
+  # Value format: "Bearer <token>" or "ApiKey <key>"
+
+  # Optional: Custom headers
+  # - name: header:X-Custom-Header
+  #   value: "custom-value"
+
+# Execute a query:
+# curl -X POST http://localhost:3500/v1.0/bindings/graphql-api \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {
+#       "query": "query GetUser($id: ID!) { user(id: $id) { id name email } }",
+#       "variables": "{\"id\": \"123\"}"
+#     },
+#     "operation": "query"
+#   }'
+
+# Execute a mutation:
+# curl -X POST http://localhost:3500/v1.0/bindings/graphql-api \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "metadata": {
+#       "query": "mutation CreateUser($input: CreateUserInput!) { createUser(input: $input) { id name } }",
+#       "variables": "{\"input\": {\"name\": \"John\", \"email\": \"john@example.com\"}}"
+#     },
+#     "operation": "mutation"
+#   }'
+
+# Python SDK example:
+# from dapr.clients import DaprClient
+# import json
+#
+# with DaprClient() as client:
+#     # Query
+#     result = client.invoke_binding(
+#         binding_name="graphql-api",
+#         operation="query",
+#         binding_metadata={
+#             "query": """
+#                 query GetProducts($category: String!) {
+#                     products(category: $category) {
+#                         id
+#                         name
+#                         price
+#                         inStock
+#                     }
+#                 }
+#             """,
+#             "variables": json.dumps({"category": "electronics"})
+#         }
+#     )
+#     data = json.loads(result.data)
+#     products = data["data"]["products"]
+#
+#     # Mutation
+#     result = client.invoke_binding(
+#         binding_name="graphql-api",
+#         operation="mutation",
+#         binding_metadata={
+#             "query": """
+#                 mutation AddToCart($productId: ID!, $quantity: Int!) {
+#                     addToCart(productId: $productId, quantity: $quantity) {
+#                         cartId
+#                         totalItems
+#                         totalPrice
+#                     }
+#                 }
+#             """,
+#             "variables": json.dumps({
+#                 "productId": "prod-123",
+#                 "quantity": 2
+#             })
+#         }
+#     )
+
+# Example: GitHub GraphQL API
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: github-graphql
+spec:
+  type: bindings.graphql
+  version: v1
+  metadata:
+  - name: endpoint
+    value: "https://api.github.com/graphql"
+  - name: header:Authorization
+    secretKeyRef:
+      name: github-secrets
+      key: token
+  # Token format in secret: "Bearer ghp_xxxx"
+
+# Query GitHub:
+# client.invoke_binding(
+#     binding_name="github-graphql",
+#     operation="query",
+#     binding_metadata={
+#         "query": """
+#             query {
+#                 viewer {
+#                     login
+#                     repositories(first: 10) {
+#                         nodes { name stargazerCount }
+#                     }
+#                 }
+#             }
+#         """
+#     }
+# )
+
+# Use cases:
+# - Integrating with third-party GraphQL APIs
+# - Federated GraphQL services
+# - Backend-for-frontend patterns
+# - API aggregation
+
+# Best practices:
+# - Use variables instead of string interpolation
+# - Handle GraphQL errors in response.errors
+# - Consider query complexity limits
+# - Cache frequently used queries

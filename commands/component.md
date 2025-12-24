@@ -69,6 +69,19 @@ When the user runs `/dapr:component`:
   - `secrets gcpsecrets` - GCP Secret Manager
   - `binding gcs` - GCP Cloud Storage
 
+  **Common Bindings:**
+  - `binding http` - HTTP/REST API calls and webhooks
+  - `binding kafka` - Apache Kafka messaging
+  - `binding rabbitmq` - RabbitMQ queues
+  - `binding mqtt` - MQTT for IoT devices
+  - `binding postgresql` - PostgreSQL database
+  - `binding mysql` - MySQL/MariaDB database
+  - `binding redis` - Redis caching/queues
+  - `binding smtp` - Email sending
+  - `binding influxdb` - InfluxDB time-series
+  - `binding localstorage` - Local filesystem
+  - `binding graphql` - GraphQL endpoints
+
 ## Examples
 
 ```
@@ -91,6 +104,14 @@ When the user runs `/dapr:component`:
 /dapr:component state firestore
 /dapr:component pubsub gcppubsub
 /dapr:component secrets gcpsecrets
+
+# Common Bindings
+/dapr:component binding http
+/dapr:component binding kafka
+/dapr:component binding rabbitmq
+/dapr:component binding mqtt
+/dapr:component binding postgresql
+/dapr:component binding smtp
 ```
 
 ## Generated Components

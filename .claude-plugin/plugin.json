@@ -1,7 +1,7 @@
 {
   "name": "dapr",
-  "version": "2.2.0",
-  "description": "Comprehensive DAPR development plugin for Python microservices with multi-cloud support (Azure, AWS, GCP). Covers all 12 DAPR building blocks plus DAPR Agents AI framework. Features: state management (Cosmos DB, DynamoDB, Firestore), pub/sub (Service Bus, SNS/SQS, GCP Pub/Sub), bindings (S3, GCS, Blob Storage), secrets (Key Vault, Secrets Manager), HTTP middleware (OAuth2, OPA, rate limiting). Includes AI agents, testing, CI/CD, observability, and security scanning.",
+  "version": "2.3.0",
+  "description": "Comprehensive DAPR development plugin for Python microservices with multi-cloud support (Azure, AWS, GCP). Covers all 12 DAPR building blocks plus DAPR Agents AI framework. Features: state management (Cosmos DB, DynamoDB, Firestore), pub/sub (Service Bus, SNS/SQS, GCP Pub/Sub), 12+ binding types (HTTP, Kafka, RabbitMQ, MQTT, databases, email), secrets (Key Vault, Secrets Manager), HTTP middleware (OAuth2, OPA, rate limiting), pluggable component development. Includes AI agents, testing, CI/CD, observability, error code reference, and security scanning.",
   "author": {
     "name": "sahib"
   },
@@ -45,7 +45,23 @@
     "crewai",
     "openai-agents",
     "tool-calling",
-    "mcp"
+    "mcp",
+    "bindings",
+    "kafka",
+    "rabbitmq",
+    "mqtt",
+    "postgresql",
+    "mysql",
+    "redis",
+    "smtp",
+    "influxdb",
+    "graphql",
+    "cron",
+    "http-binding",
+    "error-codes",
+    "pluggable-components",
+    "grpc",
+    "custom-components"
   ],
   "commands": "./commands/",
   "agents": "./agents/",
