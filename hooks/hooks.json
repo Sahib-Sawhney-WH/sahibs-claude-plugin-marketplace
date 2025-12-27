@@ -197,7 +197,7 @@
           {
             "type": "command",
             "description": "Check DAPR CLI installation",
-            "command": "dapr --version",
+            "command": "dapr --version 2>nul || echo DAPR CLI not installed - run: winget install Dapr.CLI",
             "silent": true
           }
         ]
