@@ -21,10 +21,11 @@ git clone https://github.com/YOUR-USERNAME/dapr-claude-plugin.git
 cd dapr-claude-plugin
 ```
 
-3. Install the plugin locally for testing:
+3. Add as a local marketplace and install:
 
 ```bash
-claude plugin install .
+claude plugin marketplace add ./
+claude plugin install dapr
 ```
 
 4. Create a new branch for your feature or fix:
@@ -33,11 +34,12 @@ claude plugin install .
 git checkout -b feature/your-feature-name
 ```
 
-5. After making changes, reinstall to test:
+5. After making changes, update and reinstall:
 
 ```bash
+claude plugin marketplace update dapr-marketplace
 claude plugin uninstall dapr
-claude plugin install .
+claude plugin install dapr
 ```
 
 ## Project Structure
