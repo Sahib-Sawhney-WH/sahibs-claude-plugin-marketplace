@@ -1,4 +1,4 @@
-# 🚀 Sahib's Claude Plugin Marketplace
+# Sahib's Claude Plugin Marketplace
 
 <div align="center">
 
@@ -6,70 +6,71 @@
 [![GitHub stars](https://img.shields.io/github/stars/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace?style=social)](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace)
 [![Plugins](https://img.shields.io/badge/plugins-2-blue)](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace)
 
-**✨ Supercharge your Claude Code with enterprise-grade plugins ✨**
+**Enterprise-grade plugins for Claude Code**
 
-*Microservices • Microsoft Ecosystem • Multi-Cloud • AI Agents*
+Microservices | Microsoft Ecosystem | Multi-Cloud | AI Agents
+
+[Get Started](#quick-start) · [DAPR Plugin](#dapr-plugin) · [Dataverse Plugin](#dataverse-plugin) · [Contributing](#contributing)
 
 </div>
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
-# Add the marketplace (takes 2 seconds!)
 /plugin marketplace add Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace
-
-# Browse and install
 /plugin menu
 ```
 
-**That's it!** You're ready to build amazing things. 🎉
-
 ---
 
-## 🧩 Available Plugins
+## Plugins
 
 <table>
 <tr>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 🔷 DAPR Plugin `v2.5.0`
+### DAPR Plugin
+**v2.5.0** | Distributed Application Runtime
 
-**Build distributed apps like a boss**
+Build production-ready microservices with multi-cloud support.
 
-- 🏗️ All 12 DAPR building blocks
-- ☁️ Azure, AWS, GCP support
-- 🤖 AI Agents framework
-- 🔐 Security-first defaults
-- 📝 13 slash commands
-- 🧠 11 expert agents
+| Capability | Details |
+|------------|---------|
+| Building Blocks | All 12 supported |
+| Cloud Providers | Azure, AWS, GCP |
+| Commands | 13 slash commands |
+| Agents | 11 specialized experts |
+| Templates | 100+ ready to use |
 
 ```bash
 /plugin install dapr
 ```
 
-[📖 Full Docs →](plugins/dapr/README.md)
+[View Documentation →](plugins/dapr/README.md)
 
 </td>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 💜 Dataverse Plugin `v0.1.0`
+### Dataverse Plugin
+**v0.1.0** | Microsoft Power Platform
 
-**Microsoft Dataverse, unleashed**
+Full Dataverse integration with MCP server for direct data operations.
 
-- 🔌 14 MCP tools
-- 🔑 3 auth methods
-- 📊 CRUD + bulk ops
-- 🔍 OData & SQL queries
-- 📁 File upload/download
-- 🏛️ Schema management
+| Capability | Details |
+|------------|---------|
+| MCP Tools | 14 operations |
+| Auth Methods | Browser, Device Code, Client Secret |
+| Commands | 6 slash commands |
+| Skills | 6 specialized guides |
+| Agents | 2 expert assistants |
 
 ```bash
 /plugin install dataverse
 ```
 
-[📖 Full Docs →](plugins/dataverse/README.md)
+[View Documentation →](plugins/dataverse/README.md)
 
 </td>
 </tr>
@@ -77,86 +78,79 @@
 
 ---
 
-## 🎯 What Can You Build?
+## Use Cases
 
-| With DAPR | With Dataverse |
-|-----------|----------------|
-| 🛒 E-commerce microservices | 📇 CRM integrations |
-| 🌐 Multi-cloud applications | 📊 Power Platform apps |
-| 🎭 Actor-based systems | 🔄 Data pipelines |
-| 🔄 Event-driven workflows | 🌐 Custom web portals |
-| 🤖 Durable AI agents | 📱 Mobile backends |
+| DAPR | Dataverse |
+|------|-----------|
+| Microservices architecture | CRM/ERP integrations |
+| Event-driven systems | Power Platform applications |
+| Multi-cloud deployments | Data migration pipelines |
+| Actor-based applications | Custom business portals |
+| Durable AI agent workflows | Reporting and analytics |
 
 ---
 
-## 🛠️ Installation Options
+## Installation
 
-### Install Everything
 ```bash
+# Install both plugins
 /plugin install dapr dataverse
-```
 
-### Pick Your Poison
-```bash
-/plugin install dapr        # Microservices wizard
-/plugin install dataverse   # Microsoft data guru
-```
+# Or install individually
+/plugin install dapr
+/plugin install dataverse
 
-### Stay Fresh
-```bash
+# Update to latest versions
 /plugin marketplace update
 ```
 
 ---
 
-## 📁 What's Inside
+## Repository Structure
 
 ```
-🏪 sahibs-claude-plugin-marketplace/
-├── 📋 .claude-plugin/
+sahibs-claude-plugin-marketplace/
+├── .claude-plugin/
 │   └── marketplace.json
-├── 🧩 plugins/
-│   ├── 🔷 dapr/
-│   │   ├── agents/      (11 expert agents)
-│   │   ├── commands/    (13 slash commands)
-│   │   ├── skills/      (9 skills)
-│   │   ├── hooks/       (auto-validation)
-│   │   └── templates/   (100+ templates)
-│   └── 💜 dataverse/
-│       ├── mcp/         (Python MCP server)
-│       ├── agents/      (2 agents)
-│       ├── commands/    (6 commands)
-│       └── skills/      (6 skills)
-└── 📄 README.md         (you are here!)
+├── plugins/
+│   ├── dapr/
+│   │   ├── agents/           # 11 expert agents
+│   │   ├── commands/         # 13 slash commands
+│   │   ├── skills/           # 9 skill guides
+│   │   ├── hooks/            # Auto-validation
+│   │   └── templates/        # 100+ templates
+│   └── dataverse/
+│       ├── mcp/              # Python MCP server
+│       ├── agents/           # 2 agents
+│       ├── commands/         # 6 commands
+│       └── skills/           # 6 skills
+├── LICENSE
+└── README.md
 ```
 
 ---
 
-## 🤝 Want to Contribute?
+## Contributing
 
-Got a plugin idea? Let's make it happen!
+1. Fork the repository
+2. Create your plugin in `plugins/your-plugin-name/`
+3. Add `.claude-plugin/plugin.json` manifest
+4. Update root `marketplace.json`
+5. Submit a pull request
 
-1. Fork this repo
-2. Create `plugins/your-awesome-plugin/`
-3. Add your magic ✨
-4. Submit a PR
-
-Check out [CONTRIBUTING.md](plugins/dapr/CONTRIBUTING.md) for the full guide.
+See [CONTRIBUTING.md](plugins/dapr/CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## 📬 Let's Connect
+## Support
 
-- 🐛 **Found a bug?** [Open an issue](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace/issues)
-- 💡 **Have an idea?** [Start a discussion](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace/issues)
-- 📧 **Say hi!** sahibsawhneyprofessional@gmail.com
+- **Issues**: [GitHub Issues](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace/issues)
+- **Contact**: sahibsawhneyprofessional@gmail.com
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by Sahib Sawhney**
-
-*If these plugins help you, give this repo a ⭐!*
+**Sahib Sawhney** · MIT License
 
 </div>
