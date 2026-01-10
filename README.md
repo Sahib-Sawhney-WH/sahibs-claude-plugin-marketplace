@@ -1,140 +1,162 @@
-# Sahib's Claude Plugin Marketplace
+# 🚀 Sahib's Claude Plugin Marketplace
+
+<div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace?style=social)](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace)
+[![Plugins](https://img.shields.io/badge/plugins-2-blue)](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace)
 
-A curated collection of Claude Code plugins for enterprise development, microservices, and Microsoft ecosystem integration.
+**✨ Supercharge your Claude Code with enterprise-grade plugins ✨**
 
-## Quick Start
+*Microservices • Microsoft Ecosystem • Multi-Cloud • AI Agents*
+
+</div>
+
+---
+
+## ⚡ Quick Start
 
 ```bash
-# Add the marketplace
+# Add the marketplace (takes 2 seconds!)
 /plugin marketplace add Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace
 
-# Browse and install plugins
+# Browse and install
 /plugin menu
 ```
 
-## Available Plugins
+**That's it!** You're ready to build amazing things. 🎉
 
-| Plugin | Description | Version |
-|--------|-------------|---------|
-| **[dapr](plugins/dapr/)** | Comprehensive DAPR development for Python microservices with multi-cloud support (Azure, AWS, GCP). All 12 DAPR building blocks + AI agents. | 2.5.0 |
-| **[dataverse](plugins/dataverse/)** | Microsoft Dataverse integration - CRUD operations, OData/SQL queries, metadata management, and app development assistance. | 0.1.0 |
+---
 
-## Installation
+## 🧩 Available Plugins
 
-### Install Individual Plugins
+<table>
+<tr>
+<td width="50%">
+
+### 🔷 DAPR Plugin `v2.5.0`
+
+**Build distributed apps like a boss**
+
+- 🏗️ All 12 DAPR building blocks
+- ☁️ Azure, AWS, GCP support
+- 🤖 AI Agents framework
+- 🔐 Security-first defaults
+- 📝 13 slash commands
+- 🧠 11 expert agents
 
 ```bash
-# Install DAPR plugin
 /plugin install dapr
+```
 
-# Install Dataverse plugin
+[📖 Full Docs →](plugins/dapr/README.md)
+
+</td>
+<td width="50%">
+
+### 💜 Dataverse Plugin `v0.1.0`
+
+**Microsoft Dataverse, unleashed**
+
+- 🔌 14 MCP tools
+- 🔑 3 auth methods
+- 📊 CRUD + bulk ops
+- 🔍 OData & SQL queries
+- 📁 File upload/download
+- 🏛️ Schema management
+
+```bash
 /plugin install dataverse
+```
 
-# Install both
+[📖 Full Docs →](plugins/dataverse/README.md)
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🎯 What Can You Build?
+
+| With DAPR | With Dataverse |
+|-----------|----------------|
+| 🛒 E-commerce microservices | 📇 CRM integrations |
+| 🌐 Multi-cloud applications | 📊 Power Platform apps |
+| 🎭 Actor-based systems | 🔄 Data pipelines |
+| 🔄 Event-driven workflows | 🌐 Custom web portals |
+| 🤖 Durable AI agents | 📱 Mobile backends |
+
+---
+
+## 🛠️ Installation Options
+
+### Install Everything
+```bash
 /plugin install dapr dataverse
 ```
 
-### Update Marketplace
+### Pick Your Poison
+```bash
+/plugin install dapr        # Microservices wizard
+/plugin install dataverse   # Microsoft data guru
+```
 
+### Stay Fresh
 ```bash
 /plugin marketplace update
 ```
 
 ---
 
-## Plugin Details
+## 📁 What's Inside
 
-### DAPR Plugin (v2.5.0)
-
-Full support for building distributed applications with DAPR:
-
-| Feature | Details |
-|---------|---------|
-| **Building Blocks** | All 12: State, Pub/Sub, Actors, Workflows, Bindings, Secrets, Config, Locks, Crypto, Jobs, Conversation |
-| **Multi-Cloud** | Azure, AWS, GCP templates and deployment |
-| **AI Agents** | DAPR Agents framework for durable AI workflows |
-| **Security** | TLS by default, secret management, security scanning |
-| **Commands** | 13 commands: `/dapr:init`, `/dapr:run`, `/dapr:deploy`, etc. |
-| **Agents** | 11 specialized agents for architecture, debugging, deployment |
-
-[View Full DAPR Documentation →](plugins/dapr/README.md)
+```
+🏪 sahibs-claude-plugin-marketplace/
+├── 📋 .claude-plugin/
+│   └── marketplace.json
+├── 🧩 plugins/
+│   ├── 🔷 dapr/
+│   │   ├── agents/      (11 expert agents)
+│   │   ├── commands/    (13 slash commands)
+│   │   ├── skills/      (9 skills)
+│   │   ├── hooks/       (auto-validation)
+│   │   └── templates/   (100+ templates)
+│   └── 💜 dataverse/
+│       ├── mcp/         (Python MCP server)
+│       ├── agents/      (2 agents)
+│       ├── commands/    (6 commands)
+│       └── skills/      (6 skills)
+└── 📄 README.md         (you are here!)
+```
 
 ---
 
-### Dataverse Plugin (v0.1.0)
+## 🤝 Want to Contribute?
 
-Microsoft Dataverse integration for data operations and app development:
+Got a plugin idea? Let's make it happen!
 
-| Feature | Details |
-|---------|---------|
-| **MCP Server** | 14 tools for direct Dataverse operations |
-| **Authentication** | Interactive browser, device code, client secret |
-| **Operations** | CRUD, bulk operations, OData/SQL queries |
-| **Metadata** | Create/modify tables and columns |
-| **File Handling** | Upload/download with chunking support |
-| **Commands** | 6 commands: `/dataverse:setup`, `/dataverse:import`, `/dataverse:export`, etc. |
-| **Skills** | 6 skills: SDK patterns, queries, Power Platform, web apps, schema design |
-| **Agents** | 2 agents: Data operations assistant, architecture guidance |
+1. Fork this repo
+2. Create `plugins/your-awesome-plugin/`
+3. Add your magic ✨
+4. Submit a PR
 
-[View Full Dataverse Documentation →](plugins/dataverse/README.md)
+Check out [CONTRIBUTING.md](plugins/dapr/CONTRIBUTING.md) for the full guide.
 
 ---
 
-## Repository Structure
+## 📬 Let's Connect
 
-```
-sahibs-claude-plugin-marketplace/
-├── .claude-plugin/
-│   └── marketplace.json        # Marketplace manifest
-├── plugins/
-│   ├── dapr/                   # DAPR plugin
-│   │   ├── .claude-plugin/
-│   │   │   └── plugin.json
-│   │   ├── agents/
-│   │   ├── commands/
-│   │   ├── skills/
-│   │   ├── hooks/
-│   │   ├── templates/
-│   │   └── README.md
-│   └── dataverse/              # Dataverse plugin
-│       ├── .claude-plugin/
-│       │   └── plugin.json
-│       ├── .mcp.json
-│       ├── mcp/
-│       ├── agents/
-│       ├── commands/
-│       ├── skills/
-│       └── README.md
-├── LICENSE
-└── README.md
-```
+- 🐛 **Found a bug?** [Open an issue](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace/issues)
+- 💡 **Have an idea?** [Start a discussion](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace/issues)
+- 📧 **Say hi!** sahibsawhneyprofessional@gmail.com
 
-## Adding a New Plugin
+---
 
-1. Create a directory under `plugins/your-plugin-name/`
-2. Add `.claude-plugin/plugin.json` manifest
-3. Add plugin components (agents, commands, skills, hooks)
-4. Update root `marketplace.json` with the new plugin entry
-5. Submit a pull request
+<div align="center">
 
-### Validation
+**Made with ❤️ by Sahib Sawhney**
 
-```bash
-/plugin validate .
-```
+*If these plugins help you, give this repo a ⭐!*
 
-## Contributing
-
-Contributions welcome! Please see [CONTRIBUTING.md](plugins/dapr/CONTRIBUTING.md) for guidelines.
-
-## License
-
-MIT License - See [LICENSE](LICENSE) for details.
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace/issues)
-- **Contact**: sahibsawhneyprofessional@gmail.com
+</div>
