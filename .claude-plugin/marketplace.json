@@ -1,13 +1,33 @@
 {
-  "name": "dapr-marketplace",
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "sahib-claude-marketplace",
+  "version": "1.0.0",
+  "description": "Claude Code plugins for DAPR microservices, Dataverse integration, and enterprise development",
   "owner": {
-    "name": "Sahib-Sawhney-WH"
+    "name": "Sahib Sawhney",
+    "email": "sahibsawhneyprofessional@gmail.com"
   },
-  "description": "DAPR Plugin Marketplace - Comprehensive DAPR development tools for Claude Code",
   "plugins": [
     {
       "name": "dapr",
-      "source": "./"
+      "description": "Comprehensive DAPR development plugin for Python microservices with multi-cloud support (Azure, AWS, GCP). Covers all 12 DAPR building blocks plus DAPR Agents AI framework.",
+      "version": "2.5.0",
+      "author": {
+        "name": "Sahib Sawhney"
+      },
+      "source": "./plugins/dapr",
+      "category": "development"
+    },
+    {
+      "name": "dataverse",
+      "description": "Microsoft Dataverse integration - CRUD operations, OData/SQL queries, metadata management, and app development assistance for Python, Power Platform, and web applications",
+      "version": "0.1.0",
+      "author": {
+        "name": "RSM Power Factory",
+        "email": "powerfactory@rsmus.com"
+      },
+      "source": "./plugins/dataverse",
+      "category": "development"
     }
   ]
 }

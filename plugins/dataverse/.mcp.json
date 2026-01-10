@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "dataverse": {
+      "command": "python",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dataverse_server.py"],
+      "env": {
+        "DATAVERSE_URL": "${DATAVERSE_URL}",
+        "DATAVERSE_AUTH_METHOD": "${DATAVERSE_AUTH_METHOD:-interactive}",
+        "AZURE_CLIENT_ID": "${AZURE_CLIENT_ID}",
+        "AZURE_CLIENT_SECRET": "${AZURE_CLIENT_SECRET}",
+        "AZURE_TENANT_ID": "${AZURE_TENANT_ID}"
+      }
+    }
+  }
+}

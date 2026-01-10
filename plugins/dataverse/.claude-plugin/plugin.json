@@ -1,0 +1,23 @@
+{
+  "name": "dataverse",
+  "version": "0.1.0",
+  "description": "Microsoft Dataverse integration for Claude Code - CRUD operations, querying, metadata management, and app development assistance",
+  "author": {
+    "name": "RSM Power Factory",
+    "email": "powerfactory@rsmus.com"
+  },
+  "keywords": [
+    "dataverse",
+    "powerapps",
+    "powerplatform",
+    "dynamics",
+    "crm",
+    "odata",
+    "microsoft"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "license": "MIT"
+}

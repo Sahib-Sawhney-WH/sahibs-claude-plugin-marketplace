@@ -1,0 +1,14 @@
+# Dataverse MCP Server Dependencies
+
+# MCP Protocol
+mcp>=1.0.0
+
+# Microsoft Dataverse SDK
+PowerPlatform-Dataverse-Client>=0.1.0b1
+
+# Azure Authentication
+azure-identity>=1.17.0
+azure-core>=1.30.2
+
+# HTTP Client
+requests>=2.32.0
