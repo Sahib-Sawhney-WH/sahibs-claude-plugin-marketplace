@@ -1,10 +1,41 @@
-# DAPR Plugin for Claude Code v2.5
+# DAPR Plugin for Claude Code v2.6
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.5.0-blue.svg)](https://github.com/Sahib-Sawhney-WH/dapr-claude-plugin/releases/tag/v2.5.0)
+[![Version](https://img.shields.io/badge/version-2.6.0-blue.svg)](https://github.com/Sahib-Sawhney-WH/dapr-claude-plugin/releases/tag/v2.6.0)
 [![GitHub stars](https://img.shields.io/github/stars/Sahib-Sawhney-WH/dapr-claude-plugin?style=social)](https://github.com/Sahib-Sawhney-WH/dapr-claude-plugin)
 
 A comprehensive Claude Code plugin for developing, deploying, and debugging DAPR (Distributed Application Runtime) applications with Python across Azure, AWS, and GCP.
+
+## What's New in v2.6
+
+### Cross-Platform Robustness
+- **Cross-Platform Environment Detection** - New Python-based environment checker replaces Windows-specific commands
+- **Cloud CLI Validators** - Pre-deployment validation for Azure CLI, AWS CLI, and gcloud authentication
+- **Dependency Analysis** - Circular dependency detection across component configurations
+
+### Enhanced Validation
+- **8 New Validation Functions** - Service dependencies, secret references, resource quotas, port conflicts, managed identity, mTLS, and resiliency policy validation
+- **12 New Hooks** - ACL policies, configurations, subscriptions, deployments, observability, workflows, and actors
+
+### Resiliency & Reliability
+- **Resiliency Command** - New `/dapr:resiliency` command for analyze/apply/test operations
+- **8 Pre-defined Patterns** - High-throughput, critical-service, external-api, microservices, event-driven, batch-processing, edge-computing, state-intensive
+- **Azure Container Apps Templates** - ACA-specific resiliency configuration
+
+### SDK Error Handling
+- **RetryPolicy & CircuitBreaker** - Production-ready error handling utilities
+- **@with_dapr_retry Decorator** - Automatic retry with exponential backoff
+- **Error Classification** - DaprError with category-based handling
+
+### Observability
+- **Trace Analyzer** - Analyze distributed traces from Zipkin/Jaeger/Azure Monitor
+- **Health Check Framework** - Liveness, readiness, and detailed health endpoints
+- **DAPR Sidecar Connectivity** - Automatic sidecar health verification
+
+### Chaos Testing
+- **@chaos_monkey Decorator** - Configurable failure injection for testing
+- **ResiliencyTester** - Validate retry policies, circuit breakers, and timeouts
+- **DAPR-Specific Patterns** - Component failure simulation
 
 ## What's New in v2.5
 
@@ -171,6 +202,7 @@ claude plugin update dapr
 | `/dapr:workflow` | Scaffold a new DAPR workflow |
 | `/dapr:test` | Run unit, integration, or E2E tests |
 | `/dapr:security` | Scan for security issues |
+| `/dapr:resiliency` | Analyze, apply, and test resiliency policies |
 | `/dapr:cicd` | Generate CI/CD pipelines |
 | `/dapr:project` | Initialize multi-service projects |
 | `/dapr:agent` | Create DAPR AI agents |
@@ -353,9 +385,9 @@ spec:
 
 ```
 templates/
-├── azure/           # Azure templates (10 files) - Cosmos DB, Service Bus, Key Vault,
+├── azure/           # Azure templates (12 files) - Cosmos DB, Service Bus, Key Vault,
 │                    # Blob Storage, Event Grid, Event Hubs, SignalR, Queue Storage,
-│                    # Container Apps, AKS deployment
+│                    # Container Apps, AKS deployment, resiliency-aca, resiliency-patterns
 ├── aws/             # AWS components (DynamoDB, SNS/SQS, S3, EKS, ECS)
 ├── gcp/             # GCP components (Firestore, Pub/Sub, GCS, GKE, Cloud Run)
 ├── bindings/        # 12 binding templates
@@ -363,11 +395,20 @@ templates/
 ├── pluggable/       # Custom component templates
 ├── agents/          # DAPR Agents templates
 ├── workflows/       # Workflow patterns
-└── testing/         # Test fixtures and mocks
+├── testing/         # Test fixtures, mocks, and chaos testing
+├── observability/   # Tracing, trace analyzer, and health checks
+└── utils/           # Error handling utilities (RetryPolicy, CircuitBreaker)
+
+scripts/             # Validation and environment scripts
+├── check-environment.py    # Cross-platform environment detection
+├── check-azure-auth.py     # Azure CLI validation
+├── check-aws-auth.py       # AWS CLI validation
+├── check-gcp-auth.py       # GCP CLI validation
+└── dependency-analyzer.py  # Circular dependency detection
 
 tests/               # Plugin self-tests for validation logic
 ├── conftest.py      # Pytest fixtures
-├── validators.py    # Shared validation functions
+├── validators.py    # Shared validation functions (20+ functions)
 ├── test_component_validation.py
 ├── test_middleware_validation.py
 ├── test_binding_validation.py
@@ -383,10 +424,23 @@ The plugin automatically validates:
 - Pluggable components (`pluggable/*.py`)
 - Agent configurations (`*_agent.py`, `*agent*.py`)
 - Tool definitions (`tools/*.py`)
-- Resiliency policies
+- Resiliency policies (`resiliency*.yaml`)
+- ACL policies (`acl*.yaml`)
+- Configuration components (`configuration*.yaml`)
+- Subscriptions (`subscription*.yaml`)
+- Deployments (`deploy*.yaml`)
+- Workflow implementations (`workflow*.py`)
+- Actor implementations (`actor*.py`)
+- Observability code (`observability/**/*.py`)
 - GitHub Actions workflows
 - Dockerfiles
 - Secret files
+
+### Pre-Deployment Hooks
+- Cloud CLI authentication (Azure, AWS, GCP)
+- `dapr run` port conflict detection
+- Kubernetes deployment validation
+- Docker Compose DAPR validation
 
 ## Requirements
 
@@ -424,12 +478,28 @@ See \ for detailed version matrix.
 
 | Plugin Version | DAPR Runtime | Python SDK | Notes |
 |----------------|--------------|------------|-------|
+| v2.6.x | 1.12 - 1.16 | >=1.12.0 | Robustness & resiliency enhancements |
 | v2.5.x | 1.12 - 1.16 | >=1.12.0 | Security hardened defaults |
 | v2.4.x | 1.12 - 1.16 | >=1.12.0 | Full feature support |
 | v2.3.x | 1.12 - 1.15 | >=1.12.0 | All 12 building blocks |
 | v2.1.x - v2.2.x | 1.12+ | >=1.12.0 | DAPR Agents requires 1.14+ |
 
 ## Changelog
+
+### v2.6.0
+- Cross-Platform: Replaced Windows-specific SessionStart hook with Python-based environment detection
+- Cross-Platform: Added cloud CLI authentication validators (Azure, AWS, GCP)
+- Validation: Added dependency-analyzer.py for circular dependency detection
+- Validation: Added 8 new validation functions (service dependencies, secret references, resource quotas, port conflicts, managed identity, mTLS, resiliency policies)
+- Validation: Added 12 new hooks for ACL, configuration, subscription, deployment, observability, workflow, and actor files
+- Resiliency: New `/dapr:resiliency` command for analyze/apply/test operations
+- Resiliency: Added resiliency-aca.yaml with Azure Container Apps configuration
+- Resiliency: Added resiliency-patterns.yaml with 8 pre-defined patterns
+- Error Handling: Added templates/utils/error_handling.py with RetryPolicy, CircuitBreaker, @with_dapr_retry decorator
+- Observability: Added trace_analyzer.py for Zipkin/Jaeger/Azure Monitor trace analysis
+- Observability: Added health_checks.py with liveness/readiness probe framework
+- Testing: Added chaos_testing.py with @chaos_monkey decorator and ResiliencyTester
+- Hooks: Added pre-deployment hooks for dapr run, kubectl, docker-compose, and dapr init
 
 ### v2.5.0
 - Security: Replaced `eval()` with `simpleeval` library in agent templates
