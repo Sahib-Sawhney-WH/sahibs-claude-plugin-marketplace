@@ -15,9 +15,6 @@
     "odata",
     "microsoft"
   ],
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
+  "repository": "https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace",
   "license": "MIT"
 }

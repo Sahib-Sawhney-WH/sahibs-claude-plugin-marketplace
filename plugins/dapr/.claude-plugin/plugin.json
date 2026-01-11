@@ -1,6 +1,6 @@
 {
   "name": "dapr",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Comprehensive DAPR development plugin for Python microservices with multi-cloud support (Azure, AWS, GCP). Covers all 12 DAPR building blocks plus DAPR Agents AI framework.",
   "author": {
     "name": "sahib"
