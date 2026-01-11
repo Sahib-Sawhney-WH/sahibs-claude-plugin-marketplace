@@ -1,0 +1,367 @@
+# DAPR Resiliency Pattern Catalog
+#
+# Pre-defined resiliency patterns for common scenarios.
+# Choose the pattern that matches your use case and customize as needed.
+#
+# Patterns:
+#   1. high-throughput - Fast fail, minimal retries for high-volume services
+#   2. critical-service - Maximum reliability for business-critical operations
+#   3. external-api - Optimized for unreliable external services
+#   4. state-intensive - Focused on state store consistency
+#   5. event-driven - Pub/sub and event processing patterns
+#   6. microservices - Balanced pattern for service mesh
+#   7. edge-computing - Low-latency edge scenarios
+#   8. batch-processing - Long-running batch operations
+
+---
+# =============================================================================
+# PATTERN 1: HIGH-THROUGHPUT
+# =============================================================================
+# Use Case: High-volume APIs, real-time data streaming, gaming backends
+# Characteristics: Fast failure, minimal retries, quick circuit opening
+#
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: high-throughput-pattern
+spec:
+  policies:
+    retries:
+      quickRetry:
+        policy: constant
+        duration: 100ms
+        maxRetries: 2
+    timeouts:
+      fastTimeout: 5s
+    circuitBreakers:
+      fastTrip:
+        maxRequests: 50
+        interval: 10s
+        timeout: 15s
+        trip: consecutiveFailures >= 3
+
+  targets:
+    apps:
+      # Apply to high-throughput services
+      api-gateway:
+        timeout: fastTimeout
+        retry: quickRetry
+        circuitBreaker: fastTrip
+
+---
+# =============================================================================
+# PATTERN 2: CRITICAL-SERVICE
+# =============================================================================
+# Use Case: Payment processing, order management, financial transactions
+# Characteristics: Aggressive retries, longer timeouts, slow circuit recovery
+#
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: critical-service-pattern
+spec:
+  policies:
+    retries:
+      aggressiveRetry:
+        policy: exponential
+        maxInterval: 60s
+        maxRetries: 10
+      idempotentRetry:
+        policy: exponential
+        maxInterval: 120s
+        maxRetries: 15
+    timeouts:
+      extendedTimeout: 120s
+      transactionTimeout: 180s
+    circuitBreakers:
+      cautiousBreaker:
+        maxRequests: 5
+        interval: 120s
+        timeout: 300s
+        trip: consecutiveFailures >= 10
+
+  targets:
+    apps:
+      payment-service:
+        timeout: transactionTimeout
+        retry: idempotentRetry
+        circuitBreaker: cautiousBreaker
+      order-service:
+        timeout: extendedTimeout
+        retry: aggressiveRetry
+        circuitBreaker: cautiousBreaker
+
+---
+# =============================================================================
+# PATTERN 3: EXTERNAL-API
+# =============================================================================
+# Use Case: Third-party API integrations, SaaS connections, partner APIs
+# Characteristics: Long backoff, respect rate limits, extended circuit timeout
+#
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: external-api-pattern
+spec:
+  policies:
+    retries:
+      respectfulRetry:
+        policy: exponential
+        maxInterval: 300s  # 5 minute max backoff
+        maxRetries: 5
+      rateLimitRetry:
+        policy: exponential
+        maxInterval: 60s
+        maxRetries: 3
+    timeouts:
+      externalTimeout: 60s
+      slowApiTimeout: 120s
+    circuitBreakers:
+      externalBreaker:
+        maxRequests: 3
+        interval: 300s  # Long observation window
+        timeout: 600s   # 10 minute recovery
+        trip: consecutiveFailures >= 3 || (totalFailures / totalRequests) >= 0.3
+
+  targets:
+    components:
+      # HTTP bindings to external services
+      payment-gateway:
+        outbound:
+          timeout: externalTimeout
+          retry: respectfulRetry
+          circuitBreaker: externalBreaker
+      shipping-api:
+        outbound:
+          timeout: slowApiTimeout
+          retry: rateLimitRetry
+          circuitBreaker: externalBreaker
+
+---
+# =============================================================================
+# PATTERN 4: STATE-INTENSIVE
+# =============================================================================
+# Use Case: Session management, shopping carts, user preferences
+# Characteristics: Consistency focus, moderate retries, transaction support
+#
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: state-intensive-pattern
+spec:
+  policies:
+    retries:
+      stateRetry:
+        policy: exponential
+        maxInterval: 10s
+        maxRetries: 5
+      transactionRetry:
+        policy: exponential
+        maxInterval: 30s
+        maxRetries: 8
+    timeouts:
+      stateTimeout: 15s
+      bulkTimeout: 60s
+    circuitBreakers:
+      stateBreaker:
+        maxRequests: 20
+        interval: 30s
+        timeout: 60s
+        trip: consecutiveFailures >= 5
+
+  targets:
+    components:
+      statestore:
+        outbound:
+          timeout: stateTimeout
+          retry: stateRetry
+          circuitBreaker: stateBreaker
+      session-store:
+        outbound:
+          timeout: stateTimeout
+          retry: transactionRetry
+          circuitBreaker: stateBreaker
+
+---
+# =============================================================================
+# PATTERN 5: EVENT-DRIVEN
+# =============================================================================
+# Use Case: Event sourcing, CQRS, async processing, notifications
+# Characteristics: At-least-once delivery, ordered processing, DLQ support
+#
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: event-driven-pattern
+spec:
+  policies:
+    retries:
+      publishRetry:
+        policy: constant
+        duration: 500ms
+        maxRetries: 5
+      subscriptionRetry:
+        policy: exponential
+        maxInterval: 60s
+        maxRetries: 10
+      # Dead letter after exhausted retries
+      dlqRetry:
+        policy: exponential
+        maxInterval: 300s
+        maxRetries: 3
+    timeouts:
+      publishTimeout: 10s
+      handlerTimeout: 120s
+    circuitBreakers:
+      pubsubBreaker:
+        maxRequests: 30
+        interval: 60s
+        timeout: 120s
+        trip: consecutiveFailures >= 10
+
+  targets:
+    components:
+      pubsub:
+        outbound:
+          timeout: publishTimeout
+          retry: publishRetry
+          circuitBreaker: pubsubBreaker
+        inbound:
+          timeout: handlerTimeout
+          retry: subscriptionRetry
+
+---
+# =============================================================================
+# PATTERN 6: MICROSERVICES (Balanced)
+# =============================================================================
+# Use Case: General microservices architecture, service mesh
+# Characteristics: Balanced retry/timeout, standard circuit breaker
+#
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: microservices-pattern
+spec:
+  policies:
+    retries:
+      serviceRetry:
+        policy: exponential
+        maxInterval: 15s
+        maxRetries: 5
+      internalRetry:
+        policy: constant
+        duration: 1s
+        maxRetries: 3
+    timeouts:
+      serviceTimeout: 30s
+      internalTimeout: 10s
+    circuitBreakers:
+      serviceBreaker:
+        maxRequests: 10
+        interval: 30s
+        timeout: 60s
+        trip: consecutiveFailures >= 5
+
+  targets:
+    apps:
+      # Apply to all internal services
+      user-service:
+        timeout: serviceTimeout
+        retry: serviceRetry
+        circuitBreaker: serviceBreaker
+      product-service:
+        timeout: serviceTimeout
+        retry: serviceRetry
+        circuitBreaker: serviceBreaker
+      inventory-service:
+        timeout: internalTimeout
+        retry: internalRetry
+        circuitBreaker: serviceBreaker
+
+---
+# =============================================================================
+# PATTERN 7: EDGE-COMPUTING
+# =============================================================================
+# Use Case: IoT, edge devices, low-latency requirements
+# Characteristics: Very fast timeouts, minimal retries, quick failover
+#
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: edge-computing-pattern
+spec:
+  policies:
+    retries:
+      edgeRetry:
+        policy: constant
+        duration: 50ms
+        maxRetries: 2
+      noRetry:
+        policy: constant
+        duration: 0ms
+        maxRetries: 0
+    timeouts:
+      edgeTimeout: 2s
+      sensorTimeout: 500ms
+    circuitBreakers:
+      edgeBreaker:
+        maxRequests: 100
+        interval: 5s
+        timeout: 10s
+        trip: consecutiveFailures >= 5
+
+  targets:
+    apps:
+      edge-gateway:
+        timeout: edgeTimeout
+        retry: edgeRetry
+        circuitBreaker: edgeBreaker
+      sensor-aggregator:
+        timeout: sensorTimeout
+        retry: noRetry  # Real-time data - don't retry stale data
+
+---
+# =============================================================================
+# PATTERN 8: BATCH-PROCESSING
+# =============================================================================
+# Use Case: ETL jobs, report generation, data migration
+# Characteristics: Very long timeouts, many retries, slow circuit recovery
+#
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: batch-processing-pattern
+spec:
+  policies:
+    retries:
+      batchRetry:
+        policy: exponential
+        maxInterval: 600s  # 10 minute max
+        maxRetries: 20
+      checkpointRetry:
+        policy: exponential
+        maxInterval: 120s
+        maxRetries: 10
+    timeouts:
+      batchTimeout: 3600s   # 1 hour
+      stepTimeout: 600s     # 10 minutes
+      checkpointTimeout: 60s
+    circuitBreakers:
+      batchBreaker:
+        maxRequests: 3
+        interval: 600s
+        timeout: 1800s  # 30 minute recovery
+        trip: consecutiveFailures >= 5
+
+  targets:
+    components:
+      batch-statestore:
+        outbound:
+          timeout: checkpointTimeout
+          retry: checkpointRetry
+          circuitBreaker: batchBreaker
+    apps:
+      etl-processor:
+        timeout: batchTimeout
+        retry: batchRetry
+        circuitBreaker: batchBreaker

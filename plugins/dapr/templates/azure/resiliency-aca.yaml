@@ -1,0 +1,192 @@
+# Azure Container Apps DAPR Resiliency Configuration
+#
+# This template provides production-ready resiliency policies optimized for
+# Azure Container Apps with DAPR sidecar integration.
+#
+# Usage:
+#   1. Copy to your components directory
+#   2. Customize targets to match your app IDs and component names
+#   3. Apply via Azure CLI: az containerapp update --yaml
+#
+# Reference: https://docs.microsoft.com/azure/container-apps/dapr-overview
+
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: aca-resiliency
+  # Scope to specific apps (optional - remove for cluster-wide)
+  # scopes:
+  #   - app-id-1
+  #   - app-id-2
+spec:
+  policies:
+    # ===================
+    # RETRY POLICIES
+    # ===================
+    retries:
+      # Default retry for service invocation
+      serviceInvokeRetry:
+        policy: constant
+        duration: 1s
+        maxRetries: 3
+
+      # Aggressive retry for critical state operations
+      stateStoreRetry:
+        policy: exponential
+        maxInterval: 30s
+        maxRetries: 5
+        # Matches DAPR state store retry behavior
+
+      # Conservative retry for pub/sub to prevent duplicates
+      pubsubRetry:
+        policy: exponential
+        maxInterval: 10s
+        maxRetries: 3
+
+      # External API retry with longer backoff
+      externalApiRetry:
+        policy: exponential
+        maxInterval: 60s
+        maxRetries: 5
+
+      # Binding retry for output bindings
+      bindingRetry:
+        policy: constant
+        duration: 2s
+        maxRetries: 3
+
+      # Actor method retry
+      actorRetry:
+        policy: constant
+        duration: 500ms
+        maxRetries: 3
+
+      # Workflow activity retry
+      workflowActivityRetry:
+        policy: exponential
+        maxInterval: 120s
+        maxRetries: 10
+
+    # ===================
+    # TIMEOUT POLICIES
+    # ===================
+    timeouts:
+      # General service-to-service timeout
+      serviceTimeout: 30s
+
+      # State store operation timeout
+      stateStoreTimeout: 10s
+
+      # Pub/sub publish timeout
+      pubsubTimeout: 15s
+
+      # External API call timeout (longer for third-party services)
+      externalApiTimeout: 60s
+
+      # Binding operation timeout
+      bindingTimeout: 30s
+
+      # Actor method timeout
+      actorTimeout: 60s
+
+      # Workflow activity timeout
+      workflowActivityTimeout: 300s
+
+      # Long-running operation timeout
+      longRunningTimeout: 600s
+
+    # ===================
+    # CIRCUIT BREAKER POLICIES
+    # ===================
+    circuitBreakers:
+      # Standard circuit breaker for services
+      serviceCircuitBreaker:
+        maxRequests: 10
+        interval: 30s
+        timeout: 60s
+        trip: consecutiveFailures >= 5
+
+      # Aggressive circuit breaker for critical paths
+      criticalCircuitBreaker:
+        maxRequests: 5
+        interval: 15s
+        timeout: 30s
+        trip: consecutiveFailures >= 3
+
+      # Relaxed circuit breaker for non-critical services
+      relaxedCircuitBreaker:
+        maxRequests: 20
+        interval: 60s
+        timeout: 120s
+        trip: consecutiveFailures >= 10
+
+      # External API circuit breaker (longer recovery)
+      externalApiCircuitBreaker:
+        maxRequests: 5
+        interval: 60s
+        timeout: 180s
+        trip: consecutiveFailures >= 5 || (totalFailures / totalRequests) >= 0.5
+
+      # State store circuit breaker
+      stateStoreCircuitBreaker:
+        maxRequests: 10
+        interval: 30s
+        timeout: 45s
+        trip: consecutiveFailures >= 5
+
+  # ===================
+  # TARGET CONFIGURATION
+  # ===================
+  targets:
+    # Apply to all apps (default policies)
+    apps:
+      # Example: Apply to specific app
+      # my-api:
+      #   timeout: serviceTimeout
+      #   retry: serviceInvokeRetry
+      #   circuitBreaker: serviceCircuitBreaker
+
+    # Apply to actors
+    actors:
+      # Example: Apply to specific actor type
+      # MyActorType:
+      #   timeout: actorTimeout
+      #   retry: actorRetry
+
+    # Apply to components
+    components:
+      # State store component
+      statestore:
+        outbound:
+          timeout: stateStoreTimeout
+          retry: stateStoreRetry
+          circuitBreaker: stateStoreCircuitBreaker
+
+      # Pub/sub component
+      pubsub:
+        outbound:
+          timeout: pubsubTimeout
+          retry: pubsubRetry
+
+      # Secret store (no retry - immediate fail preferred)
+      secretstore:
+        outbound:
+          timeout: 5s
+
+---
+# Azure Container Apps Ingress Resiliency (separate from DAPR)
+# Apply via: az containerapp ingress update
+#
+# inbound:
+#   httpRetryPolicy:
+#     maxRetries: 3
+#     retryBackOff:
+#       initialDelayInMilliseconds: 1000
+#       maxIntervalInMilliseconds: 10000
+#   timeoutPolicy:
+#     responseTimeoutInSeconds: 120
+#     connectionTimeoutInSeconds: 5
+#   circuitBreakerPolicy:
+#     consecutiveErrors: 5
+#     intervalInSeconds: 10
+#     timeoutInSeconds: 30
