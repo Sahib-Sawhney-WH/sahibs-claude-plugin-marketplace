@@ -185,7 +185,7 @@ claude plugin install dapr
 
 ```bash
 # Update to the latest version
-claude plugin marketplace update dapr-marketplace
+claude plugin marketplace update sahib-claude-marketplace
 claude plugin update dapr
 ```
 

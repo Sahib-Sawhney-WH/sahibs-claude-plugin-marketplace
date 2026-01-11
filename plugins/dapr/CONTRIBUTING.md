@@ -37,7 +37,7 @@ git checkout -b feature/your-feature-name
 5. After making changes, update and reinstall:
 
 ```bash
-claude plugin marketplace update dapr-marketplace
+claude plugin marketplace update sahib-claude-marketplace
 claude plugin uninstall dapr
 claude plugin install dapr
 ```
