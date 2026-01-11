@@ -23,7 +23,6 @@
     "ai-agents"
   ],
   "commands": "./commands/",
-  "agents": "./agents/*.md",
-  "skills": "./skills/",
-  "hooks": "./hooks/hooks.json"
+  "agents": "./agents/",
+  "skills": "./skills/"
 }
