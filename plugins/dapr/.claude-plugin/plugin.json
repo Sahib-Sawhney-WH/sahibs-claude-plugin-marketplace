@@ -5,7 +5,7 @@
   "author": {
     "name": "sahib"
   },
-  "repository": "https://github.com/Sahib-Sawhney-WH/dapr-claude-plugin",
+  "repository": "https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace",
   "keywords": [
     "dapr",
     "microservices",
@@ -21,8 +21,5 @@
     "workflows",
     "kubernetes",
     "ai-agents"
-  ],
-  "commands": "./commands/",
-  "agents": "./agents/",
-  "skills": "./skills/"
+  ]
 }
