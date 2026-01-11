@@ -1,88 +1,9 @@
 {
   "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/.dapr/components/*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR component configuration",
-            "prompt": "A DAPR component file was just modified. Validate that it follows DAPR component schema: check apiVersion is 'dapr.io/v1alpha1', kind is 'Component', metadata.name is valid (lowercase, alphanumeric, hyphens), spec.type is a valid DAPR component type, spec.version is specified, and no secrets are stored in plain text. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/dapr/components/*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR component configuration",
-            "prompt": "A DAPR component file was just modified. Validate that it follows DAPR component schema: check apiVersion is 'dapr.io/v1alpha1', kind is 'Component', metadata.name is valid (lowercase, alphanumeric, hyphens), spec.type is a valid DAPR component type, spec.version is specified, and no secrets are stored in plain text. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/dapr.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR multi-app configuration",
-            "prompt": "The dapr.yaml file was just modified. Validate that it has proper structure: version field is present, apps array is defined with valid entries (each having appId, appDirPath, appPort), no duplicate app IDs or port conflicts exist. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/.dapr/resiliency*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR resiliency configuration",
-            "prompt": "A DAPR resiliency file was just modified. Validate that: apiVersion is 'dapr.io/v1alpha1', kind is 'Resiliency', policies section defines valid retry/timeout/circuitBreaker policies, targets section correctly references app IDs or component names, policy names are referenced correctly. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/dapr/resiliency*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR resiliency configuration",
-            "prompt": "A DAPR resiliency file was just modified. Validate that: apiVersion is 'dapr.io/v1alpha1', kind is 'Resiliency', policies section defines valid retry/timeout/circuitBreaker policies, targets section correctly references app IDs or component names, policy names are referenced correctly. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/.dapr/config*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR configuration component",
-            "prompt": "A DAPR configuration file was modified. Validate: (1) apiVersion is 'dapr.io/v1alpha1', kind is 'Configuration', (2) If mTLS is enabled: workloadCertTTL and allowedClockSkew are reasonable, (3) If tracing is enabled: samplingRate is appropriate for the environment. Report any issues."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/.dapr/subscriptions/*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR subscription configuration",
-            "prompt": "A DAPR subscription file was modified. Validate: (1) apiVersion is 'dapr.io/v2alpha1', kind is 'Subscription', (2) pubsubname references an existing pub/sub component, (3) Topic pattern is valid, (4) Route endpoints are accessible in the target app. Report any issues."
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command_pattern": "dapr run",
+        "command_pattern": "^dapr run",
         "hooks": [
           {
             "type": "prompt",
@@ -93,35 +14,12 @@
       },
       {
         "matcher": "Bash",
-        "command_pattern": "dapr init",
+        "command_pattern": "^dapr init",
         "hooks": [
           {
             "type": "prompt",
             "description": "DAPR initialization guidance",
             "prompt": "DAPR is being initialized. After initialization completes: (1) For Kubernetes: use --slim for production, (2) Verify DAPR version compatibility with your SDK. Remind user about /dapr:init command for project scaffolding."
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "command_pattern": "pip install.*dapr-agents|uv add.*dapr-agents",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "DAPR Agents setup guidance",
-            "prompt": "dapr-agents is being installed. After installation, remind the user to: (1) Set OPENAI_API_KEY or configure Azure OpenAI credentials, (2) Use /dapr:agent command to create agent templates."
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "description": "Check DAPR and cloud environment (cross-platform)",
-            "command": "python plugins/dapr/scripts/check-environment.py",
-            "silent": true
           }
         ]
       }
