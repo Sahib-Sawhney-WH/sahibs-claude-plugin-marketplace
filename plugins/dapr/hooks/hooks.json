@@ -3,56 +3,23 @@
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "glob": "**/components/*.yaml",
+        "glob": "**/.dapr/components/*.yaml",
         "hooks": [
           {
             "type": "prompt",
             "description": "Validate DAPR component configuration",
-            "prompt": "A DAPR component file was just modified at $FILE. Validate that it follows DAPR component schema: check apiVersion is 'dapr.io/v1alpha1', kind is 'Component', metadata.name is valid (lowercase, alphanumeric, hyphens), spec.type is a valid DAPR component type, spec.version is specified, and no secrets are stored in plain text. Report any issues found."
+            "prompt": "A DAPR component file was just modified. Validate that it follows DAPR component schema: check apiVersion is 'dapr.io/v1alpha1', kind is 'Component', metadata.name is valid (lowercase, alphanumeric, hyphens), spec.type is a valid DAPR component type, spec.version is specified, and no secrets are stored in plain text. Report any issues found."
           }
         ]
       },
       {
         "matcher": "Write|Edit",
-        "glob": "**/middleware/*.yaml",
+        "glob": "**/dapr/components/*.yaml",
         "hooks": [
           {
             "type": "prompt",
-            "description": "Validate DAPR middleware configuration",
-            "prompt": "A DAPR middleware file was modified at $FILE. SECURITY VALIDATION: (1) For OAuth2/OAuth2CC: clientId and clientSecret must use secretKeyRef (not plain values), authURL and tokenURL must use HTTPS, (2) For Bearer: issuer must use HTTPS, audience must be specified, (3) For OPA: policy must have 'default allow = false', (4) For RateLimit: maxRequestsPerSecond must be reasonable, (5) For Sentinel: appName and at least one rule type required. Report any security issues or misconfigurations."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/bindings/*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR binding configuration",
-            "prompt": "A DAPR binding file was modified at $FILE. Validate: (1) Connection strings and passwords use secretKeyRef, (2) For HTTP bindings: URLs should use HTTPS in production, (3) For database bindings (postgresql, mysql): parameterized queries are used to prevent SQL injection, (4) For SMTP: credentials use secretKeyRef, (5) For Kafka/RabbitMQ: authentication is configured for production. Report any security issues or misconfigurations."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/templates/azure/*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate Azure template configuration",
-            "prompt": "An Azure template file was modified at \\. Validate Azure-specific best practices: (1) Uses managed identity (azureClientId) instead of connection strings where possible, (2) For Event Hubs: consumerGroup and storageAccountName are specified, (3) For SignalR: hub name is specified, (4) For Queue Storage: queueName and appropriate visibility timeout, (5) For all bindings: scopes are properly configured for managed identity. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/pluggable/*.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate pluggable component implementation",
-            "prompt": "A pluggable component file was modified at $FILE. Validate: (1) gRPC servicer implements required interface methods, (2) Socket path is configurable via environment variable, (3) Init method handles all metadata from component YAML, (4) Features method declares supported capabilities, (5) Error handling uses gRPC status codes. Report any issues found."
+            "description": "Validate DAPR component configuration",
+            "prompt": "A DAPR component file was just modified. Validate that it follows DAPR component schema: check apiVersion is 'dapr.io/v1alpha1', kind is 'Component', metadata.name is valid (lowercase, alphanumeric, hyphens), spec.type is a valid DAPR component type, spec.version is specified, and no secrets are stored in plain text. Report any issues found."
           }
         ]
       },
@@ -63,183 +30,51 @@
           {
             "type": "prompt",
             "description": "Validate DAPR multi-app configuration",
-            "prompt": "The dapr.yaml file was just modified at $FILE. Validate that it has proper structure: version field is present, apps array is defined with valid entries (each having appId, appDirPath, appPort), no duplicate app IDs or port conflicts exist. Report any issues found."
+            "prompt": "The dapr.yaml file was just modified. Validate that it has proper structure: version field is present, apps array is defined with valid entries (each having appId, appDirPath, appPort), no duplicate app IDs or port conflicts exist. Report any issues found."
           }
         ]
       },
       {
         "matcher": "Write|Edit",
-        "glob": "**/resiliency*.yaml",
+        "glob": "**/.dapr/resiliency*.yaml",
         "hooks": [
           {
             "type": "prompt",
             "description": "Validate DAPR resiliency configuration",
-            "prompt": "A DAPR resiliency file was just modified at $FILE. Validate that: apiVersion is 'dapr.io/v1alpha1', kind is 'Resiliency', policies section defines valid retry/timeout/circuitBreaker policies, targets section correctly references app IDs or component names, policy names are referenced correctly. Report any issues found."
+            "prompt": "A DAPR resiliency file was just modified. Validate that: apiVersion is 'dapr.io/v1alpha1', kind is 'Resiliency', policies section defines valid retry/timeout/circuitBreaker policies, targets section correctly references app IDs or component names, policy names are referenced correctly. Report any issues found."
           }
         ]
       },
       {
         "matcher": "Write|Edit",
-        "glob": "**/.github/workflows/*.yml",
+        "glob": "**/dapr/resiliency*.yaml",
         "hooks": [
           {
             "type": "prompt",
-            "description": "Validate GitHub Actions workflow for DAPR",
-            "prompt": "A GitHub Actions workflow was just modified at $FILE. If this is a DAPR-related workflow, verify: DAPR CLI installation step uses official install script, component paths are correctly referenced, AZURE_CREDENTIALS secret is used for Azure deployments (not hardcoded), health checks target the correct endpoints. Report any issues found."
+            "description": "Validate DAPR resiliency configuration",
+            "prompt": "A DAPR resiliency file was just modified. Validate that: apiVersion is 'dapr.io/v1alpha1', kind is 'Resiliency', policies section defines valid retry/timeout/circuitBreaker policies, targets section correctly references app IDs or component names, policy names are referenced correctly. Report any issues found."
           }
         ]
       },
       {
         "matcher": "Write|Edit",
-        "glob": "**/*secret*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Security check for secret files",
-            "prompt": "A file containing 'secret' in the name was modified at $FILE. CRITICAL SECURITY CHECK: Verify that no actual secrets, passwords, API keys, or sensitive credentials are stored in plain text. All secrets should reference a secret store component using secretKeyRef. Report any security issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/Dockerfile",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate Dockerfile for DAPR compatibility",
-            "prompt": "A Dockerfile was modified at $FILE. For DAPR compatibility, verify: EXPOSE statement includes the app port, health endpoint is reachable, no DAPR sidecar is included in the container (DAPR runs as sidecar, not in-container), non-root user is configured if possible. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/*_agent.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR Agent configuration",
-            "prompt": "An agent file was just modified at $FILE. Validate the DAPR Agent configuration: (1) Agent has required fields (name, role, instructions), (2) All tools have @tool decorator and docstrings for LLM understanding, (3) API keys are loaded from environment variables (not hardcoded), (4) Async is used for I/O-bound tools, (5) Complex inputs use Pydantic models with Field descriptions. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/*agent*.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR Agent patterns",
-            "prompt": "An agent-related file was modified at $FILE. If this contains DAPR Agents code, validate: (1) AssistantAgent/DurableAgent is properly imported from dapr_agents, (2) Tools are properly decorated with @tool, (3) For workflow-backed agents, activities are idempotent and workflows handle failures, (4) Memory configuration is appropriate for the use case. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/tools/*.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate agent tool definitions",
-            "prompt": "A tool file was modified at $FILE. Validate the tool definitions: (1) Each tool has @tool decorator, (2) Clear docstring describing when LLM should use the tool, (3) Input validation using Pydantic for complex parameters, (4) Proper async/await for network or I/O operations, (5) Error handling returns informative messages rather than raising exceptions. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/patterns/*.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate agentic pattern implementation",
-            "prompt": "An agentic pattern file was modified at $FILE. Validate the pattern implementation: (1) Workflow activities are properly decorated with @activity, (2) Workflows are decorated with @workflow, (3) Activities are idempotent (safe to retry), (4) External events are properly awaited for human-in-the-loop patterns, (5) Parallel execution uses when_all correctly. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/integrations/*.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate agent integration code",
-            "prompt": "An integration file was modified at $FILE. Validate the integration: (1) External framework imports are correct (crewai, openai, etc.), (2) DAPR client is properly used with async context manager, (3) Session/state management uses DAPR state store, (4) Events are published via DAPR pub/sub, (5) Error handling is comprehensive. Report any issues found."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/acl*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR ACL policy configuration",
-            "prompt": "A DAPR ACL policy file was modified at $FILE. SECURITY VALIDATION: (1) Verify default policy is 'deny' for production (principle of least privilege), (2) Check trustDomain matches your environment, (3) Validate app IDs in policies exist in dapr.yaml, (4) For service invocation: verify allowed operations are explicitly listed, (5) For pub/sub: validate topic patterns don't use wildcards unless intended, (6) Check no overly permissive 'allow all' rules. Report any security concerns."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/configuration*.yaml",
+        "glob": "**/.dapr/config*.yaml",
         "hooks": [
           {
             "type": "prompt",
             "description": "Validate DAPR configuration component",
-            "prompt": "A DAPR configuration file was modified at $FILE. Validate: (1) apiVersion is 'dapr.io/v1alpha1', kind is 'Configuration', (2) If mTLS is enabled: workloadCertTTL and allowedClockSkew are reasonable, (3) If tracing is enabled: samplingRate is appropriate for the environment (1.0 for dev, lower for production), (4) If metrics is enabled: port doesn't conflict, (5) For API access control: httpPipeline middleware is properly configured. Report any issues."
+            "prompt": "A DAPR configuration file was modified. Validate: (1) apiVersion is 'dapr.io/v1alpha1', kind is 'Configuration', (2) If mTLS is enabled: workloadCertTTL and allowedClockSkew are reasonable, (3) If tracing is enabled: samplingRate is appropriate for the environment. Report any issues."
           }
         ]
       },
       {
         "matcher": "Write|Edit",
-        "glob": "**/subscription*.yaml",
+        "glob": "**/.dapr/subscriptions/*.yaml",
         "hooks": [
           {
             "type": "prompt",
             "description": "Validate DAPR subscription configuration",
-            "prompt": "A DAPR subscription file was modified at $FILE. Validate: (1) apiVersion is 'dapr.io/v2alpha1', kind is 'Subscription', (2) pubsubname references an existing pub/sub component, (3) Topic pattern is valid (check for typos in wildcards), (4) Route endpoints are accessible in the target app, (5) For dead letter topics: dlq is configured for production, (6) Bulk subscribe settings are appropriate for message volume. Report any issues."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/deploy*.yaml",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR deployment configuration",
-            "prompt": "A deployment file was modified at $FILE. Validate DAPR annotations: (1) dapr.io/enabled is 'true', (2) dapr.io/app-id is unique and follows naming conventions, (3) dapr.io/app-port matches container port, (4) For production: dapr.io/config references a Configuration with mTLS, (5) Check resource limits are set for DAPR sidecar (dapr.io/sidecar-cpu-limit, dapr.io/sidecar-memory-limit), (6) dapr.io/enable-api-logging is appropriate for environment. Report any issues."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/observability/**/*.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate observability implementation",
-            "prompt": "An observability file was modified at $FILE. Validate: (1) OpenTelemetry is properly configured for DAPR (W3C trace context propagation), (2) Metrics use appropriate histogram boundaries, (3) Span attributes include DAPR-specific context (app-id, component), (4) Error spans properly record exceptions, (5) Health check endpoints follow /health, /ready convention. Report any issues."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/workflow*.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR workflow implementation",
-            "prompt": "A DAPR workflow file was modified at $FILE. Validate: (1) Workflows are decorated with @workflow, (2) Activities are decorated with @activity and are idempotent, (3) No non-deterministic operations in workflow code (random, datetime.now), (4) External calls are made through activities only, (5) Error handling uses try/except with proper compensation, (6) Workflow state is serializable. Report any issues."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "glob": "**/actor*.py",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Validate DAPR actor implementation",
-            "prompt": "A DAPR actor file was modified at $FILE. Validate: (1) Actor class inherits from Actor, (2) State changes use self._state_manager, (3) Timer/reminder methods follow naming conventions, (4) Actor methods are properly async, (5) Reentrancy settings are appropriate, (6) State schema changes are backward compatible. Report any issues."
+            "prompt": "A DAPR subscription file was modified. Validate: (1) apiVersion is 'dapr.io/v2alpha1', kind is 'Subscription', (2) pubsubname references an existing pub/sub component, (3) Topic pattern is valid, (4) Route endpoints are accessible in the target app. Report any issues."
           }
         ]
       }
@@ -247,92 +82,12 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command_pattern": "dapr.*deploy|az containerapp.*dapr",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Pre-deployment validation",
-            "prompt": "A DAPR deployment command is about to be executed. Before proceeding, verify: all component YAML files are valid, no plain-text secrets in configurations, resiliency policies are defined for production. If any issues are found, suggest using /dapr:security before deployment."
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "command_pattern": "pip install.*dapr-agents|uv add.*dapr-agents",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "DAPR Agents setup guidance",
-            "prompt": "dapr-agents is being installed. After installation, remind the user to: (1) Set OPENAI_API_KEY or configure Azure OpenAI credentials, (2) Use /dapr:agent command to create agent templates, (3) Review agent-builder skill for best practices. Offer to create an initial agent scaffold."
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "command_pattern": "az containerapp|az aks",
-        "hooks": [
-          {
-            "type": "command",
-            "description": "Validate Azure CLI authentication",
-            "command": "python plugins/dapr/scripts/check-azure-auth.py",
-            "silent": false
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "command_pattern": "aws ecs|aws eks|aws lambda",
-        "hooks": [
-          {
-            "type": "command",
-            "description": "Validate AWS CLI authentication",
-            "command": "python plugins/dapr/scripts/check-aws-auth.py",
-            "silent": false
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "command_pattern": "gcloud run|gcloud container|gcloud compute",
-        "hooks": [
-          {
-            "type": "command",
-            "description": "Validate Google Cloud CLI authentication",
-            "command": "python plugins/dapr/scripts/check-gcp-auth.py",
-            "silent": false
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
         "command_pattern": "dapr run",
         "hooks": [
           {
             "type": "prompt",
             "description": "Pre-run validation for local development",
-            "prompt": "A 'dapr run' command is about to be executed. Before proceeding, check: (1) The specified app port is not already in use, (2) DAPR ports (3500, 50001) are available, (3) Required components are defined in the components directory, (4) If using --resources-path, verify the path exists. Warn about any potential issues."
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "command_pattern": "kubectl apply.*dapr|helm install.*dapr",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Pre-Kubernetes deployment validation",
-            "prompt": "A DAPR Kubernetes deployment is about to be executed. Verify: (1) kubectl context is set to the correct cluster, (2) DAPR is installed on the cluster (check with 'dapr status -k'), (3) Component YAML files are valid and don't contain plain-text secrets, (4) Namespace exists if specified, (5) For production: mTLS and resiliency policies are configured. Suggest running dependency analysis if issues are found."
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "command_pattern": "docker.*compose.*up|docker-compose.*up",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Docker Compose DAPR validation",
-            "prompt": "A Docker Compose command is about to start DAPR services. Verify: (1) DAPR sidecar containers are properly configured with network_mode or links, (2) Component mount paths are correct, (3) Port mappings don't conflict, (4) Health checks are defined for DAPR-enabled services. Check for common Docker Compose DAPR pitfalls."
+            "prompt": "A 'dapr run' command is about to be executed. Before proceeding, check: (1) The specified app port is not already in use, (2) DAPR ports (3500, 50001) are available, (3) Required components are defined. Warn about any potential issues."
           }
         ]
       },
@@ -343,7 +98,18 @@
           {
             "type": "prompt",
             "description": "DAPR initialization guidance",
-            "prompt": "DAPR is being initialized. After initialization completes: (1) For Kubernetes: use --slim for production without default components, (2) Verify DAPR version compatibility with your SDK, (3) Check default components directory location, (4) For development: Redis and Zipkin will be started by default. Remind user about /dapr:init command for project scaffolding."
+            "prompt": "DAPR is being initialized. After initialization completes: (1) For Kubernetes: use --slim for production, (2) Verify DAPR version compatibility with your SDK. Remind user about /dapr:init command for project scaffolding."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "command_pattern": "pip install.*dapr-agents|uv add.*dapr-agents",
+        "hooks": [
+          {
+            "type": "prompt",
+            "description": "DAPR Agents setup guidance",
+            "prompt": "dapr-agents is being installed. After installation, remind the user to: (1) Set OPENAI_API_KEY or configure Azure OpenAI credentials, (2) Use /dapr:agent command to create agent templates."
           }
         ]
       }
