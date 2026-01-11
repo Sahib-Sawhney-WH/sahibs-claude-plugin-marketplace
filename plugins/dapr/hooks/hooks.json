@@ -1,28 +1,3 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "command_pattern": "^dapr run",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "Pre-run validation for local development",
-            "prompt": "A 'dapr run' command is about to be executed. Before proceeding, check: (1) The specified app port is not already in use, (2) DAPR ports (3500, 50001) are available, (3) Required components are defined. Warn about any potential issues."
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "command_pattern": "^dapr init",
-        "hooks": [
-          {
-            "type": "prompt",
-            "description": "DAPR initialization guidance",
-            "prompt": "DAPR is being initialized. After initialization completes: (1) For Kubernetes: use --slim for production, (2) Verify DAPR version compatibility with your SDK. Remind user about /dapr:init command for project scaffolding."
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": {}
 }
