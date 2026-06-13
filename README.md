@@ -4,13 +4,13 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace?style=social)](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace)
-[![Plugins](https://img.shields.io/badge/plugins-2-blue)](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace)
+[![Plugins](https://img.shields.io/badge/plugins-3-blue)](https://github.com/Sahib-Sawhney-WH/sahibs-claude-plugin-marketplace)
 
 **Enterprise-grade plugins for Claude Code**
 
-Microservices | Microsoft Ecosystem | Multi-Cloud | AI Agents
+Microservices | Microsoft Ecosystem | Multi-Cloud | AI Agents | Social Intelligence
 
-[Get Started](#quick-start) · [DAPR Plugin](#dapr-plugin) · [Dataverse Plugin](#dataverse-plugin) · [Contributing](#contributing)
+[Get Started](#quick-start) · [DAPR Plugin](#dapr-plugin) · [Dataverse Plugin](#dataverse-plugin) · [Hermes Tweet Plugin](#hermes-tweet-plugin) · [Contributing](#contributing)
 
 </div>
 
@@ -29,10 +29,10 @@ Microservices | Microsoft Ecosystem | Multi-Cloud | AI Agents
 
 <table>
 <tr>
-<td width="50%" valign="top">
+<td width="33%" valign="top">
 
 ### DAPR Plugin
-**v2.5.0** | Distributed Application Runtime
+**v2.6.0** | Distributed Application Runtime
 
 Build production-ready microservices with multi-cloud support.
 
@@ -51,7 +51,7 @@ Build production-ready microservices with multi-cloud support.
 [View Documentation →](plugins/dapr/README.md)
 
 </td>
-<td width="50%" valign="top">
+<td width="33%" valign="top">
 
 ### Dataverse Plugin
 **v0.1.0** | Microsoft Power Platform
@@ -73,6 +73,28 @@ Full Dataverse integration with MCP server for direct data operations.
 [View Documentation →](plugins/dataverse/README.md)
 
 </td>
+<td width="33%" valign="top">
+
+### Hermes Tweet Plugin
+**v0.1.6** | X/Twitter Intelligence
+
+Hermes Agent plugin for safe social research and opt-in X/Twitter workflows.
+
+| Capability | Details |
+|------------|---------|
+| Search | Tweets, profiles, timelines |
+| Analysis | Tweet and account context |
+| Actions | Explicitly gated write workflows |
+| Runtime | Hermes Agent native plugin |
+| Upstream | GitHub repository |
+
+```bash
+/plugin install hermes-tweet
+```
+
+[View Documentation →](https://github.com/Xquik-dev/hermes-tweet)
+
+</td>
 </tr>
 </table>
 
@@ -80,25 +102,26 @@ Full Dataverse integration with MCP server for direct data operations.
 
 ## Use Cases
 
-| DAPR | Dataverse |
-|------|-----------|
-| Microservices architecture | CRM/ERP integrations |
-| Event-driven systems | Power Platform applications |
-| Multi-cloud deployments | Data migration pipelines |
-| Actor-based applications | Custom business portals |
-| Durable AI agent workflows | Reporting and analytics |
+| DAPR | Dataverse | Hermes Tweet |
+|------|-----------|--------------|
+| Microservices architecture | CRM/ERP integrations | Social research workflows |
+| Event-driven systems | Power Platform applications | X/Twitter account context |
+| Multi-cloud deployments | Data migration pipelines | Timeline and tweet analysis |
+| Actor-based applications | Custom business portals | Campaign monitoring support |
+| Durable AI agent workflows | Reporting and analytics | Explicitly gated actions |
 
 ---
 
 ## Installation
 
 ```bash
-# Install both plugins
-/plugin install dapr dataverse
+# Install all plugins
+/plugin install dapr dataverse hermes-tweet
 
 # Or install individually
 /plugin install dapr
 /plugin install dataverse
+/plugin install hermes-tweet
 
 # Update to latest versions
 /plugin marketplace update
@@ -119,11 +142,14 @@ sahibs-claude-plugin-marketplace/
 │   │   ├── skills/           # 9 skill guides
 │   │   ├── hooks/            # Auto-validation
 │   │   └── templates/        # 100+ templates
-│   └── dataverse/
-│       ├── mcp/              # Python MCP server
-│       ├── agents/           # 2 agents
-│       ├── commands/         # 6 commands
-│       └── skills/           # 6 skills
+│   ├── dataverse/
+│   │   ├── mcp/              # Python MCP server
+│   │   ├── agents/           # 2 agents
+│   │   ├── commands/         # 6 commands
+│   │   └── skills/           # 6 skills
+│   └── hermes-tweet/
+│       ├── README.md         # Hermes Tweet install guide
+│       └── skills/           # Hermes Tweet workflow guide
 ├── LICENSE
 └── README.md
 ```

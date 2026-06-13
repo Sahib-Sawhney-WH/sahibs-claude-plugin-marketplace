@@ -1,8 +1,5 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "sahib-claude-marketplace",
-  "version": "1.0.0",
-  "description": "Claude Code plugins for DAPR microservices, Dataverse integration, and enterprise development",
   "owner": {
     "name": "Sahib Sawhney",
     "email": "sahibsawhneyprofessional@gmail.com"
@@ -28,6 +25,20 @@
       },
       "source": "./plugins/dataverse",
       "category": "development"
+    },
+    {
+      "name": "hermes-tweet",
+      "description": "Hermes Agent plugin for safe X/Twitter search, profile, timeline, tweet analysis, and opt-in action workflows through Xquik.",
+      "version": "0.1.6",
+      "author": {
+        "name": "Xquik"
+      },
+      "source": "./plugins/hermes-tweet",
+      "category": "automation"
     }
-  ]
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Claude Code plugins for DAPR microservices, Dataverse integration, social intelligence, and enterprise development"
+  }
 }
